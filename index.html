@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jyoti Masala Box (ज्योति मसाला बॉक्स) - घरेलू कुकिंग टिप्स, सीक्रेट मसाले व रेसिपीज़</title>
+  
+  <!-- Meta tags for SEO & Social Sharing -->
+  <meta name="description" content="सब्जी में तेल-नमक ज्यादा हो जाए तो क्या करें? दाल जल जाए तो क्या करें? जलेबी कुरकुरी और खमन स्पंजी कैसे बनाएं? दाल, चिकन, मटन और गरम मसाला की प्रामाणिक विधियां।">
+  <meta name="keywords" content="Jyoti Masala Box, Jyoti Didi, cooking tips, kitchen hacks, dal masala, chicken masala, mutton masala, crispy jalebi, spongy khaman, sabzi me tel jyada">
+  <meta name="theme-color" content="#C0392B">
+
+  <!-- Favicon icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>🌶️</text></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            spice: {
+              50: '#FDF2F2',
+              100: '#FDE8E8',
+              500: '#E02424',
+              600: '#C0392B',
+              700: '#962D22',
+            },
+            turmeric: {
+              400: '#F59E0B',
+              500: '#F39C12',
+              600: '#D97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amber-500 selection:text-white pb-20 sm:pb-0">
+
+  <!-- Top Sleek Announcement Bar -->
+  <aside class="bg-gradient-to-r from-red-700 via-amber-600 to-red-700 text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium shadow-sm flex items-center justify-center gap-2">
+    <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-300"></i>
+    <span>किचन इमरजेंसी? सब्जी में ज्यादा तेल या दाल जल गई? तुरंत समाधान के लिए नीचे 'किचन SOS' पर क्लिक करें!</span>
+  </aside>
+
+  <!-- Clean, Elegant Header with Small Ganesha Murti -->
+  <header id="main-header" class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-amber-200/80 shadow-sm transition-all">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 gap-2 sm:gap-4">
+        
+        <!-- Left: Cute Small Ganesha Murti + Brand Title & Tagline -->
+        <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 min-w-0">
+          
+          <!-- Small Ganesha Shrine with Flower Rain STRICTLY inside this frame -->
+          <div class="ganesh-mini-shrine" title="श्री गणेश जी महाराज - फूलों की वर्षा" onclick="window.app.showerExtraPetals()">
+            <!-- Dedicated Flower Rain Canvas (EXCLUSIVELY OVER GANESHA MURTI) -->
+            <canvas id="ganesh-murti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-20"></canvas>
+
+            <!-- Small Ganesh Ji Idol (Murti) -->
+            <div class="w-10 h-11 relative z-10 flex items-center justify-center mt-0.5">
+              <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=300&q=80" alt="श्री गणेश जी मूर्ति" class="w-full h-full object-cover rounded-lg shadow-2xs border border-amber-300/80" />
+            </div>
+
+            <!-- Sacred Inscription Under Murti -->
+            <span class="text-[7.5px] font-extrabold text-amber-950 font-rozha tracking-tight leading-none z-10 pb-0.5 whitespace-nowrap">
+              ॥ श्री गणेश ॥
+            </span>
+          </div>
+
+          <!-- Brand Logo & Tagline -->
+          <div class="cursor-pointer shrink-0 flex flex-col justify-center select-none" onclick="window.app.switchTab('dashboard')">
+            <div class="flex items-center gap-1.5 sm:gap-2 leading-none whitespace-nowrap">
+              <span class="brand-title text-lg sm:text-xl md:text-2xl font-black text-stone-900 tracking-tight">
+                Jyoti Masala Box
+              </span>
+              <span class="text-[9px] sm:text-[10px] bg-gradient-to-r from-red-600 to-amber-600 text-white font-extrabold px-2 py-0.5 rounded-full shadow-2xs hidden md:inline-block whitespace-nowrap">
+                ज्योति मसाला बॉक्स
+              </span>
+            </div>
+            <p class="text-[9.5px] sm:text-[11px] text-amber-900/90 font-semibold tracking-wide mt-1 leading-none whitespace-nowrap">
+              घर का स्वाद, असली मसाले और दादी के नुस्खे
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-1 xl:gap-1.5 shrink-0">
+          <button onclick="window.app.switchTab('dashboard')" data-target="dashboard" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            📊 डैशबोर्ड
+          </button>
+          <button onclick="window.app.switchTab('tips')" data-target="tips" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            💡 टिप्स
+          </button>
+          <button onclick="window.app.switchTab('masalas')" data-target="masalas" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            🌿 मसाले
+          </button>
+          <button onclick="window.app.switchTab('recipes')" data-target="recipes" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            🍲 रेसिपीज़
+          </button>
+          <button onclick="window.app.switchTab('favorites')" data-target="favorites" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all relative whitespace-nowrap">
+            ❤️ पसंदीदा
+            <span class="bookmark-count-badge hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+          </button>
+          <button onclick="window.app.switchTab('contact')" data-target="contact" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            📞 संपर्क
+          </button>
+          <button onclick="window.app.switchTab('admin')" data-target="admin" class="nav-link-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-sm flex items-center gap-1 border border-amber-300 whitespace-nowrap">
+            <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+            <span>कस्टमाइज़</span>
+          </button>
+        </nav>
+
+        <!-- Search & Action Buttons -->
+        <div class="hidden sm:flex items-center gap-2 xl:gap-3 shrink-0">
+          <!-- Live Search Bar -->
+          <div class="relative hidden 2xl:block xl:block">
+            <input type="text" placeholder="सब्जी में तेल, दाल..." class="universal-search-input w-36 xl:w-44 bg-amber-50/70 border border-amber-300/80 rounded-xl pl-8 pr-3 py-1.5 text-xs text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all" />
+            <i data-lucide="search" class="w-3.5 h-3.5 text-amber-700 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+          </div>
+
+          <!-- WhatsApp Chat Direct Button -->
+          <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20कुकिंग%20टिप्स%20और%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all pulse-glow-green whitespace-nowrap">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>व्हाट्सएप</span>
+          </a>
+
+          <!-- Direct Calling Button -->
+          <a href="tel:+919876543210" class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all whitespace-nowrap">
+            <i data-lucide="phone" class="w-4 h-4"></i>
+            <span>कॉल</span>
+          </a>
+        </div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <div class="flex items-center gap-2 lg:hidden">
+          <button onclick="window.app.switchTab('favorites')" class="p-2 text-gray-700 relative">
+            <i data-lucide="heart" class="w-6 h-6"></i>
+            <span class="bookmark-count-badge hidden absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+          </button>
+          
+          <button onclick="window.app.openMobileDrawer()" class="p-2 text-gray-800 hover:text-amber-600 focus:outline-none">
+            <i data-lucide="menu" class="w-7 h-7"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <aside id="mobile-menu-drawer" class="fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out border-l border-amber-200 lg:hidden">
+    <div>
+      <div class="flex items-center justify-between pb-6 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🌶️</span>
+          <span class="font-bold text-gray-900 font-rozha">Jyoti Masala Box</span>
+        </div>
+        <button onclick="window.app.closeMobileDrawer()" class="p-2 text-gray-500 hover:text-gray-900">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Search -->
+      <div class="relative mt-6 mb-6">
+        <input type="text" placeholder="सब्जी में तेल, दाल, जलेबी..." class="universal-search-input w-full bg-amber-50 border border-amber-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800" />
+        <i data-lucide="search" class="w-4 h-4 text-amber-700 absolute left-3 top-1/2 -translate-y-1/2"></i>
+      </div>
+
+      <!-- Navigation links -->
+      <nav class="space-y-2">
+        <button onclick="window.app.switchTab('dashboard')" data-target="dashboard" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 text-amber-600"></i>
+          <span>डैशबोर्ड</span>
+        </button>
+        <button onclick="window.app.switchTab('tips')" data-target="tips" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-600"></i>
+          <span>टिप्स & ट्रिक्स</span>
+        </button>
+        <button onclick="window.app.switchTab('masalas')" data-target="masalas" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="package" class="w-5 h-5 text-red-600"></i>
+          <span>मसाले बनाने की विधि</span>
+        </button>
+        <button onclick="window.app.switchTab('recipes')" data-target="recipes" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="utensils" class="w-5 h-5 text-amber-600"></i>
+          <span>सभी रेसिपीज़</span>
+        </button>
+        <button onclick="window.app.switchTab('favorites')" data-target="favorites" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+          <span>पसंदीदा लिस्ट</span>
+        </button>
+        <button onclick="window.app.switchTab('contact')" data-target="contact" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+          <i data-lucide="phone-call" class="w-5 h-5 text-emerald-600"></i>
+          <span>संपर्क व सहायता</span>
+        </button>
+        <button onclick="window.app.switchTab('admin')" data-target="admin" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 bg-amber-50 text-amber-900 border border-amber-300">
+          <i data-lucide="settings-2" class="w-5 h-5 text-amber-600"></i>
+          <span>⚙️ कस्टमाइज़ डैशबोर्ड (Admin)</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Quick action footer in mobile drawer -->
+    <div class="pt-6 border-t border-gray-100 space-y-2">
+      <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20कुकिंग%20टिप्स%20और%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
+        <i data-lucide="message-circle" class="w-4 h-4"></i>
+        <span>व्हाट्सएप पर पूछें</span>
+      </a>
+      <a href="tel:+919876543210" class="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
+        <i data-lucide="phone" class="w-4 h-4"></i>
+        <span>डायरेक्ट कॉल करें</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Mobile Sticky Quick Actions Bar -->
+  <div class="mobile-sticky-actions sm:hidden px-4 py-2.5 flex items-center justify-around">
+    <button onclick="window.app.switchTab('dashboard')" class="flex flex-col items-center text-[10px] text-gray-700">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span>होम</span>
+    </button>
+    <button onclick="window.app.switchTab('tips')" class="flex flex-col items-center text-[10px] text-amber-700 font-bold">
+      <i data-lucide="lightbulb" class="w-5 h-5"></i>
+      <span>टिप्स</span>
+    </button>
+    <button onclick="window.app.switchTab('masalas')" class="flex flex-col items-center text-[10px] text-red-700 font-bold">
+      <i data-lucide="package" class="w-5 h-5"></i>
+      <span>मसाले</span>
+    </button>
+    <button onclick="window.app.switchTab('admin')" class="flex flex-col items-center text-[10px] text-purple-700 font-bold">
+      <i data-lucide="settings" class="w-5 h-5"></i>
+      <span>कस्टमाइज़</span>
+    </button>
+    <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!" target="_blank" class="flex flex-col items-center text-[10px] text-emerald-600 font-bold">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>
+      <span>व्हाट्सएप</span>
+    </a>
+  </div>
+
+  <!-- Main Dynamic Workspace View -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="tab-content-dashboard"></div>
+    <div id="tab-content-tips" class="hidden"></div>
+    <div id="tab-content-masalas" class="hidden"></div>
+    <div id="tab-content-recipes" class="hidden"></div>
+    <div id="tab-content-favorites" class="hidden"></div>
+    <div id="tab-content-contact" class="hidden"></div>
+    <div id="tab-content-admin" class="hidden"></div>
+  </main>
+
+  <!-- Universal Modal Component -->
+  <div id="universal-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm modal-overlay">
+    <div id="modal-dynamic-content" class="w-full"></div>
+  </div>
+
+  <!-- Admin Login Password Modal -->
+  <div id="admin-login-modal" class="fixed inset-0 z-[250] hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-md modal-overlay">
+    <div class="relative bg-white rounded-3xl overflow-hidden max-w-md w-full mx-auto shadow-2xl modal-content-box border-2 border-amber-400">
+      <!-- Close Button -->
+      <button onclick="window.app.closeAdminLoginModal()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-stone-900 to-amber-950 text-white p-6 text-center border-b border-amber-500/30">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-400/40 flex items-center justify-center mb-3 shadow-inner">
+          <i data-lucide="lock" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-xl font-bold font-rozha">सुरक्षित एडमिन लॉगिन पैनल</h3>
+        <p class="text-xs text-stone-300 mt-1">वेबसाइट कस्टमाइज़ करने के लिए केवल अधिकृत एडमिन ही प्रवेश कर सकते हैं।</p>
+      </div>
+
+      <!-- Login Form -->
+      <form onsubmit="window.app.handleAdminLogin(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">यूजरनेम (Username)</label>
+          <div class="relative">
+            <input type="text" id="admin-login-username" required placeholder="admin" value="admin" class="w-full bg-gray-50 border border-gray-300 focus:bg-white focus:border-amber-500 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none transition-all font-mono" />
+            <i data-lucide="user" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">गुप्त पासवर्ड (Password)</label>
+          <div class="relative">
+            <input type="password" id="admin-login-password" required placeholder="पासवर्ड दर्ज करें" class="w-full bg-gray-50 border border-gray-300 focus:bg-white focus:border-amber-500 rounded-xl pl-10 pr-10 py-2.5 text-sm outline-none transition-all font-mono" />
+            <i data-lucide="key" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <button type="button" onclick="window.app.togglePasswordVisibility('admin-login-password')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-login-error" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200 text-center font-semibold">
+          गलत यूजरनेम या पासवर्ड! कृपया सही पासवर्ड दर्ज करें।
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold py-3 rounded-xl text-sm shadow-md transition-all flex items-center justify-center gap-2">
+            <i data-lucide="unlock" class="w-4 h-4"></i>
+            <span>लॉगिन करें (Unlock Dashboard)</span>
+          </button>
+        </div>
+
+        <div class="text-center pt-2 border-t border-gray-100">
+          <p class="text-[11px] text-gray-500">
+            🔐 डिफ़ॉल्ट पासवर्ड: <code class="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-bold font-mono">jyoti123</code>
+          </p>
+          <p class="text-[10px] text-gray-400 mt-1">लॉगिन करने के बाद आप सेटिंग्स में अपना पासवर्ड बदल सकते हैं।</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Quick Customizer Button (Bottom Left) -->
+  <div class="floating-customizer-btn hidden sm:block">
+    <button onclick="window.app.switchTab('admin')" class="inline-flex items-center gap-2 bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 hover:from-amber-600 hover:to-red-600 text-white font-extrabold px-4 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-amber-400/70 pulse-glow-amber text-xs">
+      <i data-lucide="settings" class="w-4 h-4 text-amber-300"></i>
+      <span>⚙️ कस्टमाइज़ डैशबोर्ड</span>
+    </button>
+  </div>
+
+  <!-- Floating AI Assistant / Chef Chatbot ("ज्योति दीदी से पूछें") -->
+  <div class="floating-chat-btn">
+    <div class="relative">
+      <!-- Chat Trigger Floating Button -->
+      <button onclick="window.app.toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-2xl flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 pulse-glow-amber">
+        <i data-lucide="message-square" class="w-7 h-7"></i>
+      </button>
+
+      <!-- Notification Badge Tag -->
+      <div class="absolute -top-3 -left-32 bg-white text-gray-900 text-[11px] font-bold px-3 py-1 rounded-full shadow-lg border border-amber-300 pointer-events-none hidden sm:flex items-center gap-1.5 animate-bounce">
+        <span>👩‍🍳 ज्योति दीदी से पूछें</span>
+      </div>
+
+      <!-- Interactive Chat Box Window -->
+      <div id="chat-widget-box" class="hidden absolute bottom-20 right-0 w-[90vw] sm:w-96 bg-white rounded-3xl shadow-2xl border border-amber-200 overflow-hidden flex flex-col z-50">
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-red-600 to-amber-600 p-4 text-white flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-lg">
+              👩‍🍳
+            </div>
+            <div>
+              <h4 class="font-bold text-sm">ज्योति दीदी (Kitchen Assistant)</h4>
+              <span class="text-[10px] text-amber-100 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>ऑनलाइन | तुरंत समाधान</span>
+              </span>
+            </div>
+          </div>
+          <button onclick="window.app.toggleChat()" class="text-white hover:text-amber-200">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Chat Quick Suggestion Chips -->
+        <div class="bg-amber-50/80 p-2.5 border-b border-amber-200/60 overflow-x-auto flex gap-1.5 no-scrollbar">
+          <button onclick="window.app.triggerQuickChip('सब्जी में तेल ज्यादा हो गया')" class="shrink-0 bg-white hover:bg-amber-100 text-gray-800 text-[10px] font-medium px-2.5 py-1 rounded-full border border-amber-300 shadow-2xs">
+            🫗 तेल ज्यादा हो गया
+          </button>
+          <button onclick="window.app.triggerQuickChip('दाल जल गई')" class="shrink-0 bg-white hover:bg-amber-100 text-gray-800 text-[10px] font-medium px-2.5 py-1 rounded-full border border-amber-300 shadow-2xs">
+            🔥 दाल जल गई
+          </button>
+          <button onclick="window.app.triggerQuickChip('जलेबी कुरकुरी कैसे बनेगी')" class="shrink-0 bg-white hover:bg-amber-100 text-gray-800 text-[10px] font-medium px-2.5 py-1 rounded-full border border-amber-300 shadow-2xs">
+            🥨 जलेबी कुरकुरी
+          </button>
+          <button onclick="window.app.triggerQuickChip('खमन ढोकला नहीं फूला')" class="shrink-0 bg-white hover:bg-amber-100 text-gray-800 text-[10px] font-medium px-2.5 py-1 rounded-full border border-amber-300 shadow-2xs">
+            🍰 खमन स्पंजी
+          </button>
+          <button onclick="window.app.triggerQuickChip('चिकन मसाला रेसिपी')" class="shrink-0 bg-white hover:bg-amber-100 text-gray-800 text-[10px] font-medium px-2.5 py-1 rounded-full border border-amber-300 shadow-2xs">
+            🍗 चिकन मसाला
+          </button>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="chat-messages-container" class="h-72 p-4 overflow-y-auto space-y-3 bg-[#FAF8F5]"></div>
+
+        <!-- Escalate to WhatsApp Bar -->
+        <div class="bg-emerald-50 px-3 py-1.5 border-t border-emerald-200 flex items-center justify-between text-[11px] text-emerald-900">
+          <span>व्यक्तिगत चैट चाहिए?</span>
+          <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!" target="_blank" class="font-bold text-emerald-700 hover:underline flex items-center gap-1">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+            <span>व्हाट्सएप पर खोलें</span>
+          </a>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form onsubmit="event.preventDefault(); window.app.sendChatMessage(document.getElementById('chat-user-input').value)" class="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+          <input type="text" id="chat-user-input" placeholder="जैसे: नमक ज्यादा हो गया तो क्या करें?" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-amber-500 focus:bg-white" />
+          <button type="submit" class="w-9 h-9 rounded-xl bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center shrink-0">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="bg-stone-900 text-stone-300 pt-16 pb-12 border-t-4 border-amber-500 no-print mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-stone-800">
+        
+        <!-- About Brand & Contact -->
+        <div class="space-y-4 lg:col-span-3">
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">🌶️</span>
+            <span class="text-2xl font-bold text-white font-rozha">Jyoti Masala Box</span>
+          </div>
+          <p class="text-xs text-stone-400 leading-relaxed">
+            ज्योति मसाला बॉक्स भारतीय रसोई को शुद्धता, स्वाद और दादी-नानी के पारंपरिक नुस्खों से महकाने का एक डिजिटल प्रयास है। बिना मिलावट के असली मसालों की खुशबू हर घर तक!
+          </p>
+          <div class="space-y-2 pt-1 text-xs">
+            <div class="flex items-center gap-2">
+              <i data-lucide="phone" class="w-4 h-4 text-amber-500"></i>
+              <span class="text-white font-mono" id="footer-call-phone">+91 98765 43210</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
+              <span class="text-stone-400">सुबह 8:00 से रात 10:00 तक</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 pt-2">
+            <a href="https://wa.me/919876543210" target="_blank" class="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-colors" title="व्हाट्सएप पर बात करें">
+              <i data-lucide="message-circle" class="w-5 h-5"></i>
+            </a>
+            <a href="tel:+919876543210" class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-colors" title="कॉल करें">
+              <i data-lucide="phone" class="w-5 h-5"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="lg:col-span-2">
+          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-amber-500 pl-2">वेबसाइट नेविगेशन</h4>
+          <ul class="space-y-2 text-xs">
+            <li><button onclick="window.app.switchTab('dashboard')" class="hover:text-amber-400 transition-colors">📊 डैशबोर्ड (Dashboard)</button></li>
+            <li><button onclick="window.app.switchTab('tips')" class="hover:text-amber-400 transition-colors">💡 घरेलू कुकिंग टिप्स</button></li>
+            <li><button onclick="window.app.switchTab('masalas')" class="hover:text-amber-400 transition-colors">🌿 मसाले बनाने की विधि</button></li>
+            <li><button onclick="window.app.switchTab('recipes')" class="hover:text-amber-400 transition-colors">🍲 स्वादिष्ट रेसिपीज़</button></li>
+            <li><button onclick="window.app.switchTab('favorites')" class="hover:text-amber-400 transition-colors">❤️ पसंदीदा सूची</button></li>
+            <li><button onclick="window.app.switchTab('contact')" class="hover:text-amber-400 transition-colors">📞 संपर्क व सहायता</button></li>
+          </ul>
+        </div>
+
+        <!-- Popular Kitchen Hacks -->
+        <div class="lg:col-span-3">
+          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-red-500 pl-2">इमरजेंसी किचन हैक्स</h4>
+          <ul class="space-y-2 text-xs">
+            <li><button onclick="window.app.openTipModal('tip-oil-excess')" class="hover:text-amber-400 text-left">सब्जी में ज्यादा तेल गिर जाए तो?</button></li>
+            <li><button onclick="window.app.openTipModal('tip-dal-burnt')" class="hover:text-amber-400 text-left">दाल जल जाए तो गंध कैसे हटाएं?</button></li>
+            <li><button onclick="window.app.openTipModal('tip-jalebi-crispy')" class="hover:text-amber-400 text-left">जलेबी एकदम कुरकुरी कैसे बनाएं?</button></li>
+            <li><button onclick="window.app.openTipModal('tip-khaman-spongy')" class="hover:text-amber-400 text-left">खमन ढोकला स्पंजी कैसे बनाएं?</button></li>
+            <li><button onclick="window.app.openTipModal('tip-salt-excess')" class="hover:text-amber-400 text-left">सब्जी में नमक ज्यादा हो जाए तो?</button></li>
+          </ul>
+        </div>
+
+        <!-- Customizable UPI Payment QR Code Card -->
+        <div id="footer-qr-container" class="lg:col-span-4 w-full">
+          <!-- Populated dynamically by app.js updateGlobalHeaderAndFooter() -->
+        </div>
+
+      </div>
+
+      <div class="pt-8 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p>© 2026 Jyoti Masala Box (ज्योति मसाला बॉक्स). सर्वाधिकार सुरक्षित।</p>
+        <p class="flex items-center gap-1">
+          <span>शुद्धता व स्वाद के साथ</span>
+          <span class="text-red-500">❤️</span>
+          <span>भारतीय रसोइयों के लिए समर्पित</span>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
