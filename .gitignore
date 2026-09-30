@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Vercel
+.vercel/
+
 # Logs
 *.log
 npm-debug.log*
@@ -16,3 +19,5 @@ npm-debug.log*
 # System files
 .DS_Store
 Thumbs.db
+
+.vercel
