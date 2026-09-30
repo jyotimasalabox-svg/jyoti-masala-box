@@ -20,6 +20,9 @@
           parsed.config.qrTitle = parsed.config.qrTitle || "स्कैन करें और भुगतान करें (Scan & Pay)";
           parsed.config.qrSubtitle = parsed.config.qrSubtitle || "Google Pay, PhonePe, Paytm या किसी भी UPI ऐप से भुगतान करें";
           if (parsed.config.showFooterQr === undefined) parsed.config.showFooterQr = true;
+          if (!parsed.products || parsed.products.length === 0) {
+            parsed.products = typeof PRODUCTS_DATA !== "undefined" ? JSON.parse(JSON.stringify(PRODUCTS_DATA)) : [];
+          }
           return parsed;
         }
       } catch (e) {
@@ -32,7 +35,8 @@
       tips: JSON.parse(JSON.stringify(TIPS_DATA)),
       masalas: JSON.parse(JSON.stringify(MASALAS_DATA)),
       recipes: JSON.parse(JSON.stringify(RECIPES_DATA)),
-      quickSos: JSON.parse(JSON.stringify(QUICK_SOS_HACKS))
+      quickSos: JSON.parse(JSON.stringify(QUICK_SOS_HACKS)),
+      products: typeof PRODUCTS_DATA !== "undefined" ? JSON.parse(JSON.stringify(PRODUCTS_DATA)) : []
     };
     base.config.adminUser = "admin";
     base.config.adminPass = "jyoti123";
@@ -53,14 +57,20 @@
     tipFilter: "all",
     masalaFilter: "all",
     recipeFilter: "all",
+    shopCategoryFilter: "all",
+    shopSortFilter: "popular",
     activeSearch: "",
     data: loadMasterData(),
-    bookmarks: JSON.parse(localStorage.getItem("jyoti_bookmarks") || '{"recipes":[], "tips":[], "masalas":[]}'),
+    cart: JSON.parse(localStorage.getItem("jyoti_cart") || "[]"),
+    appliedCoupon: JSON.parse(localStorage.getItem("jyoti_applied_coupon") || "null"),
+    orders: JSON.parse(localStorage.getItem("jyoti_orders") || "[]"),
+    selectedProductVariants: {},
+    bookmarks: JSON.parse(localStorage.getItem("jyoti_bookmarks") || '{"recipes":[], "tips":[], "masalas":[], "products":[]}'),
     selectedMasalaBatch: {},
     chatMessages: [
       {
         sender: "bot",
-        text: "नमस्ते! 🙏 मैं ज्योति दीदी हूँ। रसोई में कोई परेशानी है? जैसे सब्जी में नमक या तेल ज्यादा हो गया, दाल जल गई या कोई मसाला बनाना हो, बेझिझक पूछिए!",
+        text: "नमस्ते! 🙏 मैं ज्योति दीदी हूँ। रसोई में कोई परेशानी है? जैसे सब्जी में नमक या तेल ज्यादा हो गया, दाल जल गई या कोई ताज़ा मसाला मंगाना हो, बेझिझक पूछिए!",
         time: getCurrentTimeString()
       }
     ],
@@ -349,6 +359,1239 @@
     lucide.createIcons();
   }
 
+  // --- E-COMMERCE CART & ORDER CONTROLLER ---
+  function saveCart() {
+    localStorage.setItem("jyoti_cart", JSON.stringify(state.cart));
+    updateCartBadges();
+  }
+
+  function updateCartBadges() {
+    const totalQty = state.cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+    const badges = [
+      document.getElementById("header-cart-badge"),
+      document.getElementById("mobile-bar-cart-badge"),
+      document.getElementById("mobile-drawer-cart-badge")
+    ];
+    badges.forEach(b => {
+      if (b) {
+        b.textContent = totalQty;
+        b.classList.remove("hidden");
+        b.classList.add("scale-125");
+        setTimeout(() => b.classList.remove("scale-125"), 200);
+      }
+    });
+
+    const headerTotal = document.getElementById("header-cart-total");
+    if (headerTotal) {
+      const totals = getCartTotals();
+      headerTotal.textContent = `₹${totals.grandTotal}`;
+    }
+  }
+
+  function getCartTotals() {
+    const subtotal = state.cart.reduce((sum, item) => sum + (item.price * (item.qty || 1)), 0);
+    const mrpTotal = state.cart.reduce((sum, item) => sum + ((item.mrp || item.price) * (item.qty || 1)), 0);
+    const savings = Math.max(0, mrpTotal - subtotal);
+    
+    let couponDiscount = 0;
+    let freeShippingCoupon = false;
+
+    if (state.appliedCoupon) {
+      if (state.appliedCoupon.freeShipping) {
+        freeShippingCoupon = true;
+      }
+      if (state.appliedCoupon.discountPercent) {
+        couponDiscount = Math.round((subtotal * state.appliedCoupon.discountPercent) / 100);
+      } else if (state.appliedCoupon.flatDiscount) {
+        couponDiscount = Math.min(subtotal, state.appliedCoupon.flatDiscount);
+      }
+    }
+
+    const freeThreshold = 499;
+    const isFreeDelivery = (subtotal >= freeThreshold) || freeShippingCoupon;
+    const deliveryFee = (subtotal === 0 || isFreeDelivery) ? 0 : 40;
+    const grandTotal = Math.max(0, subtotal - couponDiscount + deliveryFee);
+    const neededForFree = Math.max(0, freeThreshold - subtotal);
+
+    return {
+      subtotal,
+      mrpTotal,
+      savings,
+      couponDiscount,
+      deliveryFee,
+      grandTotal,
+      freeThreshold,
+      neededForFree,
+      isFreeDelivery
+    };
+  }
+
+  function addToCart(productId, weight = null, qty = 1, openDrawer = true) {
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    const prod = products.find(p => p.id === productId);
+    if (!prod) {
+      showToast("प्रॉडक्ट नहीं मिला!");
+      return;
+    }
+
+    const selectedWeight = weight || state.selectedProductVariants[productId] || prod.variants[0].weight;
+    const variant = prod.variants.find(v => v.weight === selectedWeight) || prod.variants[0];
+
+    const existingIdx = state.cart.findIndex(i => i.id === productId && i.weight === variant.weight);
+    if (existingIdx > -1) {
+      state.cart[existingIdx].qty += qty;
+    } else {
+      state.cart.push({
+        id: prod.id,
+        name: prod.name,
+        englishName: prod.englishName,
+        image: prod.image,
+        weight: variant.weight,
+        price: variant.price,
+        mrp: variant.mrp,
+        qty: qty
+      });
+    }
+
+    saveCart();
+    showToast(`🛒 ${prod.name} (${variant.weight}) कार्ट में जोड़ा गया!`);
+
+    if (openDrawer) {
+      openCartDrawer();
+    }
+  }
+
+  function buyNow(productId, weight = null) {
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    const prod = products.find(p => p.id === productId);
+    if (!prod) return;
+
+    const selectedWeight = weight || state.selectedProductVariants[productId] || prod.variants[0].weight;
+    const variant = prod.variants.find(v => v.weight === selectedWeight) || prod.variants[0];
+
+    const directItem = {
+      id: prod.id,
+      name: prod.name,
+      englishName: prod.englishName,
+      image: prod.image,
+      weight: variant.weight,
+      price: variant.price,
+      mrp: variant.mrp,
+      qty: 1
+    };
+
+    openCheckoutModal(directItem);
+  }
+
+  function quickAddLinkedProductToCart(masalaId) {
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    const prod = products.find(p => p.linkedMasalaId === masalaId) || products[0];
+    if (prod) {
+      addToCart(prod.id, null, 1, true);
+    }
+  }
+
+  function updateCartQty(index, delta) {
+    if (!state.cart[index]) return;
+    state.cart[index].qty += delta;
+    if (state.cart[index].qty <= 0) {
+      state.cart.splice(index, 1);
+      showToast("सामान कार्ट से हटा दिया गया");
+    }
+    saveCart();
+    renderCartDrawer();
+  }
+
+  function removeFromCart(index) {
+    if (!state.cart[index]) return;
+    state.cart.splice(index, 1);
+    saveCart();
+    showToast("सामान कार्ट से हटा दिया गया");
+    renderCartDrawer();
+  }
+
+  function clearCart() {
+    state.cart = [];
+    saveCart();
+    renderCartDrawer();
+  }
+
+  function applyCoupon(code) {
+    const c = (code || "").trim().toUpperCase();
+    if (!c) {
+      showToast("कृपया कूपन कोड दर्ज करें!");
+      return;
+    }
+    const coupons = typeof COUPONS_DATA !== "undefined" ? COUPONS_DATA : [];
+    const found = coupons.find(x => x.code === c);
+    if (!found) {
+      showToast("अमान्य कूपन कोड! कृपया सही कोड डालें ❌");
+      return;
+    }
+
+    const totals = getCartTotals();
+    if (found.minOrder && totals.subtotal < found.minOrder) {
+      showToast(`इस कूपन के लिए न्यूनतम ₹${found.minOrder} का ऑर्डर आवश्यक है! ⚠️`);
+      return;
+    }
+
+    state.appliedCoupon = found;
+    localStorage.setItem("jyoti_applied_coupon", JSON.stringify(found));
+    showToast(`🎉 कूपन '${c}' सफलतापूर्वक लागू हो गया!`);
+    renderCartDrawer();
+  }
+
+  function removeCoupon() {
+    state.appliedCoupon = null;
+    localStorage.removeItem("jyoti_applied_coupon");
+    showToast("कूपन हटा दिया गया");
+    renderCartDrawer();
+  }
+
+  function openCartDrawer() {
+    renderCartDrawer();
+    const overlay = document.getElementById("cart-drawer-overlay");
+    const drawer = document.getElementById("cart-drawer");
+    if (overlay && drawer) {
+      overlay.classList.remove("hidden");
+      drawer.classList.remove("translate-x-full");
+      drawer.classList.add("translate-x-0");
+    }
+    lucide.createIcons();
+  }
+
+  function closeCartDrawer() {
+    const overlay = document.getElementById("cart-drawer-overlay");
+    const drawer = document.getElementById("cart-drawer");
+    if (overlay && drawer) {
+      overlay.classList.add("hidden");
+      drawer.classList.add("translate-x-full");
+      drawer.classList.remove("translate-x-0");
+    }
+  }
+
+  function setProductVariant(productId, weight) {
+    state.selectedProductVariants[productId] = weight;
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    const prod = products.find(p => p.id === productId);
+    if (!prod) return;
+
+    const variant = prod.variants.find(v => v.weight === weight) || prod.variants[0];
+    
+    // Update price display on card(s)
+    document.querySelectorAll(`[data-prod-price="${productId}"], #prod-price-${productId}`).forEach(el => {
+      el.textContent = `₹${variant.price}`;
+    });
+
+    document.querySelectorAll(`[data-prod-mrp="${productId}"], #prod-mrp-${productId}`).forEach(el => {
+      el.textContent = `₹${variant.mrp}`;
+    });
+
+    document.querySelectorAll(`[data-prod-discount="${productId}"], #prod-discount-${productId}`).forEach(el => {
+      if (variant.discount) el.textContent = variant.discount;
+    });
+
+    // Update active state of pills
+    document.querySelectorAll(`[data-variant-btn="${productId}"]`).forEach(btn => {
+      const active = btn.getAttribute("data-weight") === weight;
+      btn.classList.toggle("bg-amber-600", active);
+      btn.classList.toggle("text-white", active);
+      btn.classList.toggle("border-amber-600", active);
+      btn.classList.toggle("bg-stone-50", !active);
+      btn.classList.toggle("text-stone-700", !active);
+      btn.classList.toggle("border-stone-200", !active);
+    });
+  }
+
+  function renderCartDrawer() {
+    const container = document.getElementById("cart-drawer-content");
+    if (!container) return;
+
+    const items = state.cart;
+    const totals = getCartTotals();
+    const count = items.reduce((sum, item) => sum + (item.qty || 1), 0);
+    const freeDeliveryPercent = Math.min(100, Math.round((totals.subtotal / totals.freeThreshold) * 100));
+
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🛒</span>
+            <h3 class="font-bold text-gray-900 text-lg">आपकी शॉपिंग कार्ट</h3>
+          </div>
+          <button onclick="window.app.closeCartDrawer()" class="p-2 text-gray-400 hover:text-gray-700 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div class="w-24 h-24 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center text-4xl mb-4 shadow-inner">
+            🌶️
+          </div>
+          <h4 class="font-bold text-gray-900 text-lg mb-1">आपकी कार्ट अभी खाली है!</h4>
+          <p class="text-xs text-gray-500 mb-6 max-w-xs">रसोई में शुद्धता और खुशबू घोलने के लिए हमारे ताज़ा पिसे और खड़े मसाले देखें।</p>
+          <button onclick="window.app.switchTab('shop'); window.app.closeCartDrawer();" class="bg-gradient-to-r from-red-600 to-amber-600 text-white font-extrabold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span>मसाले देखें व खरीदें</span>
+          </button>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = `
+      <!-- Drawer Header -->
+      <div class="p-5 border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center font-bold">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 text-base leading-none">आपकी शॉपिंग कार्ट</h3>
+              <span class="text-[11px] text-gray-500 font-medium">${count} सामान शामिल हैं</span>
+            </div>
+          </div>
+          <button onclick="window.app.closeCartDrawer()" class="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Free Delivery Progress Tracker -->
+        <div class="mt-4 bg-amber-50/80 p-3 rounded-2xl border border-amber-200/80 text-xs">
+          ${totals.isFreeDelivery ? `
+            <div class="flex items-center gap-1.5 text-emerald-700 font-bold">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+              <span>🎉 बधाई! आपको इस ऑर्डर पर <strong>मुफ़्त एक्सप्रेस डिलीवरी</strong> मिल रही है!</span>
+            </div>
+          ` : `
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-[11px]">
+                <span class="text-amber-900 font-semibold">मुफ़्त डिलीवरी हेतु ₹${totals.neededForFree} का सामान और जोड़ें</span>
+                <span class="font-bold text-amber-700">${freeDeliveryPercent}%</span>
+              </div>
+              <div class="w-full h-2 bg-amber-200/60 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-300" style="width: ${freeDeliveryPercent}%"></div>
+              </div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- Cart Items Scroll Area -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-3 divide-y divide-gray-100">
+        ${items.map((item, idx) => `
+          <div class="pt-3 first:pt-0 flex items-center gap-3">
+            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-xl object-cover border border-amber-200/60 shrink-0" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-1">
+                <h4 class="font-bold text-gray-900 text-xs truncate">${item.name}</h4>
+                <button onclick="window.app.removeFromCart(${idx})" class="text-gray-400 hover:text-red-500 p-1 transition-colors" title="हटाएं">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-md mt-0.5">
+                ${item.weight}
+              </span>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-stone-900 text-sm">₹${item.price * item.qty}</span>
+                  ${item.mrp > item.price ? `<span class="text-[11px] text-gray-400 line-through">₹${item.mrp * item.qty}</span>` : ''}
+                </div>
+                <div class="flex items-center gap-2 bg-stone-100 rounded-xl px-2 py-1 border border-stone-200">
+                  <button onclick="window.app.updateCartQty(${idx}, -1)" class="w-5 h-5 rounded-lg bg-white text-stone-700 hover:bg-stone-200 flex items-center justify-center font-bold text-xs transition-colors">-</button>
+                  <span class="font-bold text-xs w-4 text-center">${item.qty}</span>
+                  <button onclick="window.app.updateCartQty(${idx}, 1)" class="w-5 h-5 rounded-lg bg-white text-stone-700 hover:bg-stone-200 flex items-center justify-center font-bold text-xs transition-colors">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+
+      <!-- Bottom Summary & Checkout Actions -->
+      <div class="p-5 border-t border-gray-100 bg-stone-50 space-y-3 sticky bottom-0 z-10 shadow-lg">
+        
+        <!-- Coupon Input Box -->
+        <div class="space-y-1.5">
+          ${state.appliedCoupon ? `
+            <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs">
+              <div class="flex items-center gap-1.5 text-emerald-800 font-bold">
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>कूपन लागू: <strong>${state.appliedCoupon.code}</strong> (-₹${totals.couponDiscount})</span>
+              </div>
+              <button onclick="window.app.removeCoupon()" class="text-xs text-red-600 hover:underline font-semibold">हटाएं</button>
+            </div>
+          ` : `
+            <div class="flex gap-2">
+              <input type="text" id="cart-coupon-input" placeholder="कूपन कोड (उदा: JYOTI10)" class="flex-1 bg-white border border-gray-300 rounded-xl px-3 py-1.5 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-amber-500" />
+              <button onclick="window.app.applyCoupon(document.getElementById('cart-coupon-input').value)" class="bg-stone-900 hover:bg-stone-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-colors">
+                लागू करें
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="window.app.applyCoupon('JYOTI10')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-300 transition-colors">🏷️ JYOTI10 (10% OFF)</button>
+              <button onclick="window.app.applyCoupon('SHUDDH50')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-300 transition-colors">🏷️ SHUDDH50 (₹50 OFF)</button>
+            </div>
+          `}
+        </div>
+
+        <!-- Bill Table -->
+        <div class="space-y-1.5 text-xs text-stone-600 border-t border-stone-200/80 pt-2.5">
+          <div class="flex justify-between">
+            <span>कार्ट उप-कुल (Subtotal)</span>
+            <span class="font-semibold text-stone-900">₹${totals.subtotal}</span>
+          </div>
+          ${totals.couponDiscount > 0 ? `
+            <div class="flex justify-between text-emerald-600 font-bold">
+              <span>कूपन छूट</span>
+              <span>-₹${totals.couponDiscount}</span>
+            </div>
+          ` : ''}
+          <div class="flex justify-between">
+            <span>डिलीवरी शुल्क</span>
+            <span class="${totals.deliveryFee === 0 ? 'text-emerald-600 font-bold' : 'font-semibold text-stone-900'}">
+              ${totals.deliveryFee === 0 ? 'मुफ़्त (Free)' : `₹${totals.deliveryFee}`}
+            </span>
+          </div>
+          <div class="flex justify-between items-center text-sm font-black text-stone-900 border-t border-stone-200 pt-2">
+            <span>कुल देय राशि:</span>
+            <span class="text-base text-red-600 font-mono">₹${totals.grandTotal}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2 pt-1">
+          <button onclick="window.app.openCheckoutModal()" class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold py-3 rounded-2xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95">
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+            <span>ऑर्डर पूरा करें (चेकआउट)</span>
+          </button>
+          
+          <button onclick="window.app.orderViaWhatsAppDirect()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>व्हाट्सएप पर ऑर्डर भेजें</span>
+          </button>
+        </div>
+
+      </div>
+    `;
+
+    lucide.createIcons();
+  }
+
+  function openCheckoutModal(directItem = null) {
+    closeCartDrawer();
+    const items = directItem ? [directItem] : state.cart;
+    if (items.length === 0) {
+      showToast("आपकी कार्ट खाली है!");
+      return;
+    }
+
+    const totals = directItem ? {
+      subtotal: directItem.price * directItem.qty,
+      couponDiscount: 0,
+      deliveryFee: directItem.price >= 499 ? 0 : 40,
+      grandTotal: (directItem.price * directItem.qty) + (directItem.price >= 499 ? 0 : 40)
+    } : getCartTotals();
+
+    const modal = document.getElementById("universal-modal");
+    const container = document.getElementById("modal-dynamic-content");
+    if (!modal || !container) return;
+
+    container.innerHTML = `
+      <div class="relative bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-auto shadow-2xl modal-content-box border-2 border-amber-400 text-gray-800 max-h-[90vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 text-white p-5 text-center relative border-b border-amber-500/30 shrink-0">
+          <button onclick="window.app.closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+          <div class="w-10 h-10 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-400/40 flex items-center justify-center mb-1.5 shadow-inner">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-lg font-bold font-rozha">सुरक्षित चेकआउट व डिलीवरी</h3>
+          <p class="text-[11px] text-amber-200 mt-0.5">अपना पता भरें और पसंदीदा भुगतान विकल्प चुनें</p>
+        </div>
+
+        <!-- Scrollable Form Area -->
+        <form onsubmit="window.app.handlePlaceOrder(event, ${directItem ? `'${directItem.id}', '${directItem.weight}'` : 'null, null'})" class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+          
+          <!-- Order Items Mini Preview -->
+          <div class="bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80">
+            <div class="flex items-center justify-between font-bold text-stone-900 mb-2">
+              <span>ऑर्डर किए गए मसाले (${items.length}):</span>
+              <span class="text-red-700 font-mono">देय राशि: ₹${totals.grandTotal}</span>
+            </div>
+            <div class="space-y-1 max-h-24 overflow-y-auto no-scrollbar">
+              ${items.map(i => `
+                <div class="flex justify-between text-[11px] text-stone-700">
+                  <span class="truncate max-w-[240px]">${i.name} (${i.weight}) x ${i.qty}</span>
+                  <span class="font-bold">₹${i.price * i.qty}</span>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+
+          <!-- Customer Address Details -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-stone-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 border-b border-gray-100 pb-1">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>डिलीवरी का पता (Shipping Details)</span>
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-gray-700 font-bold mb-1">पूरा नाम (Full Name) *</label>
+                <input type="text" id="order-cust-name" required placeholder="जैसे: राहुल शर्मा" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:border-amber-500 outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-gray-700 font-bold mb-1">मोबाइल नंबर (Phone Number) *</label>
+                <input type="tel" id="order-cust-phone" required pattern="[0-9]{10}" placeholder="10 अंकों का मोबाइल नंबर" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:border-amber-500 outline-none font-mono" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-1">
+                <label class="block text-gray-700 font-bold mb-1">पिनकोड (Pincode) *</label>
+                <input type="text" id="order-cust-pincode" required pattern="[0-9]{6}" placeholder="जैसे: 302001" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:border-amber-500 outline-none font-mono" />
+              </div>
+
+              <div class="sm:col-span-1">
+                <label class="block text-gray-700 font-bold mb-1">शहर (City) *</label>
+                <input type="text" id="order-cust-city" required placeholder="शहर का नाम" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:border-amber-500 outline-none" />
+              </div>
+
+              <div class="sm:col-span-1">
+                <label class="block text-gray-700 font-bold mb-1">राज्य (State) *</label>
+                <input type="text" id="order-cust-state" required placeholder="जैसे: राजस्थान" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs focus:bg-white focus:border-amber-500 outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-700 font-bold mb-1">घर/मकान नं., गली, लैंडमार्क (Full Address) *</label>
+              <textarea id="order-cust-address" required rows="2" placeholder="पूरा पता लिखें ताकि डिलीवरी बॉय आसानी से पहुंच सके..." class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs focus:bg-white focus:border-amber-500 outline-none"></textarea>
+            </div>
+          </div>
+
+          <!-- Payment Options -->
+          <div class="space-y-2 pt-2 border-t border-gray-100">
+            <h4 class="font-bold text-stone-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <i data-lucide="wallet" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>भुगतान का तरीका (Payment Method)</span>
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <label class="cursor-pointer border-2 border-amber-500 rounded-2xl p-3 flex flex-col items-center text-center bg-amber-50/50 hover:bg-amber-100/50 transition-colors">
+                <input type="radio" name="order-payment-method" value="upi" checked class="mb-1 text-amber-600 focus:ring-amber-500" />
+                <span class="font-extrabold text-stone-900 text-xs">📱 UPI / QR स्कैन</span>
+                <span class="text-[10px] text-emerald-700 font-semibold mt-0.5">Google Pay, PhonePe</span>
+              </label>
+
+              <label class="cursor-pointer border-2 border-stone-200 rounded-2xl p-3 flex flex-col items-center text-center bg-white hover:bg-stone-50 transition-colors">
+                <input type="radio" name="order-payment-method" value="cod" class="mb-1 text-amber-600 focus:ring-amber-500" />
+                <span class="font-extrabold text-stone-900 text-xs">💵 कैश ऑन डिलीवरी</span>
+                <span class="text-[10px] text-stone-500 font-semibold mt-0.5">घर पर नकद दें</span>
+              </label>
+
+              <label class="cursor-pointer border-2 border-stone-200 rounded-2xl p-3 flex flex-col items-center text-center bg-white hover:bg-stone-50 transition-colors">
+                <input type="radio" name="order-payment-method" value="whatsapp" class="mb-1 text-amber-600 focus:ring-amber-500" />
+                <span class="font-extrabold text-stone-900 text-xs">💬 व्हाट्सएप ऑर्डर</span>
+                <span class="text-[10px] text-stone-500 font-semibold mt-0.5">चैट पर पुष्टि करें</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Total Due and Submit Button -->
+          <div class="pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <div class="text-[11px] text-gray-500">कुल देय राशि (Grand Total):</div>
+              <div class="text-xl font-black text-red-600 font-mono leading-none">₹${totals.grandTotal}</div>
+            </div>
+
+            <button type="submit" class="w-full sm:w-auto flex-1 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold py-3 px-6 rounded-2xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>ऑर्डर कन्फर्म करें (Place Order)</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function handlePlaceOrder(event, directProdId = null, directWeight = null) {
+    event.preventDefault();
+
+    const name = document.getElementById("order-cust-name").value.trim();
+    const phone = document.getElementById("order-cust-phone").value.trim();
+    const pincode = document.getElementById("order-cust-pincode").value.trim();
+    const city = document.getElementById("order-cust-city").value.trim();
+    const stateVal = document.getElementById("order-cust-state").value.trim();
+    const address = document.getElementById("order-cust-address").value.trim();
+    const methodEl = document.querySelector('input[name="order-payment-method"]:checked');
+    const paymentMethod = methodEl ? methodEl.value : "upi";
+
+    if (!name || !phone || !pincode || !city || !address) {
+      showToast("कृपया सभी आवश्यक फ़ील्ड भरें!");
+      return;
+    }
+
+    let orderItems = [];
+    if (directProdId) {
+      const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+      const prod = products.find(p => p.id === directProdId);
+      const variant = prod ? (prod.variants.find(v => v.weight === directWeight) || prod.variants[0]) : null;
+      if (prod && variant) {
+        orderItems = [{
+          id: prod.id,
+          name: prod.name,
+          weight: variant.weight,
+          price: variant.price,
+          mrp: variant.mrp,
+          qty: 1,
+          image: prod.image
+        }];
+      }
+    } else {
+      orderItems = JSON.parse(JSON.stringify(state.cart));
+    }
+
+    const subtotal = orderItems.reduce((s, i) => s + (i.price * i.qty), 0);
+    const totals = getCartTotals();
+    const deliveryFee = subtotal >= 499 ? 0 : 40;
+    const discount = directProdId ? 0 : totals.couponDiscount;
+    const grandTotal = Math.max(0, subtotal - discount + deliveryFee);
+
+    const orderId = `JMB-${Date.now().toString().slice(-4)}${Math.floor(Math.random()*900 + 100)}`;
+    const newOrder = {
+      orderId,
+      createdAt: new Date().toISOString(),
+      dateFormatted: new Date().toLocaleDateString('hi-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      customer: { name, phone, pincode, city, state: stateVal, address },
+      items: orderItems,
+      subtotal,
+      discount,
+      deliveryFee,
+      grandTotal,
+      paymentMethod,
+      status: "आर्डर प्राप्त हुआ (Confirmed)",
+      statusStep: 1
+    };
+
+    state.orders.unshift(newOrder);
+    localStorage.setItem("jyoti_orders", JSON.stringify(state.orders));
+
+    if (!directProdId) {
+      clearCart();
+    }
+
+    closeModal();
+    openOrderSuccessModal(newOrder);
+  }
+
+  function openOrderSuccessModal(order) {
+    const modal = document.getElementById("universal-modal");
+    const container = document.getElementById("modal-dynamic-content");
+    if (!modal || !container) return;
+
+    const conf = state.data.config;
+    const upiId = conf.upiId || "jyotimasala@upi";
+    const upiName = conf.upiName || "Jyoti Masala Box";
+    const upiPayUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${encodeURIComponent(order.grandTotal)}&cu=INR`;
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiPayUrl)}&margin=8`;
+
+    const whatsappSummary = encodeURIComponent(
+      `नमस्ते ज्योति दीदी! मैंने वेबसाइट पर नया मसाला ऑर्डर दिया है:\n\n` +
+      `📦 ऑर्डर आईडी: ${order.orderId}\n` +
+      `👤 नाम: ${order.customer.name}\n` +
+      `📞 फोन: ${order.customer.phone}\n` +
+      `🏠 पता: ${order.customer.address}, ${order.customer.city} (${order.customer.pincode})\n\n` +
+      `🛒 सामान:\n` + order.items.map(i => `- ${i.name} (${i.weight}) x ${i.qty} = ₹${i.price * i.qty}`).join('\n') +
+      `\n\n💰 कुल राशि: ₹${order.grandTotal}\n` +
+      `💳 भुगतान माध्यम: ${order.paymentMethod === 'upi' ? 'UPI' : order.paymentMethod === 'cod' ? 'कैश ऑन डिलीवरी (COD)' : 'व्हाट्सएप'}\n\n` +
+      `कृपया ऑर्डर कन्फर्म करें!`
+    );
+    const whatsappLink = `https://wa.me/${conf.rawPhone || '919876543210'}?text=${whatsappSummary}`;
+
+    container.innerHTML = `
+      <div class="relative bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-auto shadow-2xl modal-content-box border-2 border-emerald-500 text-gray-800 max-h-[90vh] flex flex-col">
+        
+        <!-- Header with success animation -->
+        <div class="bg-gradient-to-r from-emerald-700 via-teal-800 to-emerald-700 text-white p-6 text-center relative border-b border-emerald-600/30 shrink-0">
+          <button onclick="window.app.closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+          
+          <div class="w-14 h-14 mx-auto rounded-full bg-white text-emerald-600 flex items-center justify-center mb-2 shadow-lg animate-bounce">
+            <i data-lucide="check" class="w-8 h-8 stroke-[3]"></i>
+          </div>
+          <h3 class="text-xl font-bold font-rozha">ऑर्डर सफलतापूर्वक दर्ज हो गया!</h3>
+          <p class="text-xs text-emerald-100 mt-1">ऑर्डर आईडी: <strong class="font-mono bg-emerald-950/60 px-2 py-0.5 rounded text-amber-300 font-bold">${order.orderId}</strong></p>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-4 text-xs">
+          
+          <!-- Delivery ETA Badge -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="font-bold text-emerald-900">अनुमानित डिलीवरी: 2 से 4 कार्यदिवस</div>
+              <div class="text-[11px] text-emerald-700">मसाले ताज़ा तैयार करके सुरक्षित पैकिंग में भेजे जाएंगे।</div>
+            </div>
+          </div>
+
+          ${order.paymentMethod === 'upi' ? `
+            <!-- Instant UPI Payment QR Code Section -->
+            <div class="bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-4 text-center space-y-2">
+              <span class="inline-block bg-amber-500 text-stone-900 text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase">
+                भुगतान पूरा करें (Scan & Pay)
+              </span>
+              <h4 class="font-bold text-sm text-stone-900">कुल देय राशि: <span class="text-emerald-600 text-lg font-mono">₹${order.grandTotal}</span></h4>
+              <p class="text-[11px] text-stone-600">Google Pay, PhonePe, Paytm या किसी भी UPI ऐप से स्कैन करके भुगतान करें:</p>
+              
+              <div class="bg-white p-2.5 rounded-xl border border-amber-300 inline-block shadow-sm">
+                <img src="${qrSrc}" alt="UPI QR Code" class="w-40 h-40 object-contain mx-auto" />
+              </div>
+
+              <div class="flex items-center justify-center gap-2">
+                <a href="${upiPayUrl}" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition-all">
+                  <i data-lucide="smartphone" class="w-4 h-4"></i>
+                  <span>UPI ऐप में खोलें</span>
+                </a>
+                <button onclick="window.app.copyUpiId()" class="bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold px-3 py-2 rounded-xl text-xs transition-all">
+                  UPI ID कॉपी करें
+                </button>
+              </div>
+            </div>
+          ` : order.paymentMethod === 'cod' ? `
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500 text-stone-900 flex items-center justify-center font-bold text-lg shrink-0">
+                💵
+              </div>
+              <div>
+                <div class="font-bold text-amber-950">कैश ऑन डिलीवरी (COD) चुना गया</div>
+                <div class="text-[11px] text-amber-800">पार्सल मिलने पर ₹${order.grandTotal} डिलीवरी बॉय को नकद या UPI द्वारा दें।</div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Order Summary Details -->
+          <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 space-y-2">
+            <h5 class="font-bold text-stone-900 text-xs border-b border-stone-200 pb-1.5">डिलीवरी पता:</h5>
+            <div class="text-stone-700 leading-relaxed text-[11px]">
+              <div><strong>${order.customer.name}</strong> (${order.customer.phone})</div>
+              <div>${order.customer.address}</div>
+              <div>${order.customer.city}, ${order.customer.state} - <strong>${order.customer.pincode}</strong></div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="space-y-2 pt-2">
+            <a href="${whatsappLink}" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md transition-all">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>व्हाट्सएप पर ऑर्डर रसीद भेजें</span>
+            </a>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="window.print()" class="bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>रसीद प्रिंट करें</span>
+              </button>
+              
+              <button onclick="window.app.closeModal(); window.app.switchTab('shop');" class="bg-stone-900 hover:bg-stone-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors">
+                <i data-lucide="store" class="w-4 h-4"></i>
+                <span>और मसाले देखें</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function orderViaWhatsAppDirect() {
+    if (state.cart.length === 0) {
+      showToast("आपकी कार्ट खाली है!");
+      return;
+    }
+    const totals = getCartTotals();
+    const conf = state.data.config;
+    const itemsText = state.cart.map((i, idx) => `${idx + 1}. ${i.name} (${i.weight}) x ${i.qty} = ₹${i.price * i.qty}`).join("\n");
+    const msg = encodeURIComponent(
+      `नमस्ते ज्योति दीदी! मुझे निम्नलिखित शुद्ध मसाले ऑर्डर करने हैं:\n\n` +
+      `${itemsText}\n\n` +
+      `💰 कुल देय राशि: ₹${totals.grandTotal}\n` +
+      `${totals.deliveryFee === 0 ? '🚚 डिलीवरी: मुफ़्त (Free)' : `🚚 डिलीवरी: ₹${totals.deliveryFee}`}\n\n` +
+      `कृपया मुझे पेमेंट डिटेल्स और डिलीवरी का समय बताएं। धन्यवाद!`
+    );
+    window.open(`https://wa.me/${conf.rawPhone || '919876543210'}?text=${msg}`, "_blank");
+  }
+
+  function openMyOrdersModal() {
+    const modal = document.getElementById("universal-modal");
+    const container = document.getElementById("modal-dynamic-content");
+    if (!modal || !container) return;
+
+    const orders = state.orders || [];
+
+    container.innerHTML = `
+      <div class="relative bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-auto shadow-2xl modal-content-box border-2 border-amber-400 text-gray-800 max-h-[90vh] flex flex-col">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 text-white p-5 text-center relative border-b border-amber-500/30 shrink-0">
+          <button onclick="window.app.closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+          <div class="w-10 h-10 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-400/40 flex items-center justify-center mb-1.5 shadow-inner">
+            <i data-lucide="package-check" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-lg font-bold font-rozha">मेरे ऑर्डर्स व ट्रैकिंग</h3>
+          <p class="text-[11px] text-amber-200 mt-0.5">आपके द्वारा दिए गए सभी ऑर्डर्स की स्थिति</p>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-4 text-xs">
+          ${orders.length === 0 ? `
+            <div class="text-center py-12 space-y-3">
+              <div class="text-4xl">📦</div>
+              <h4 class="font-bold text-gray-900 text-base">अभी तक कोई ऑर्डर नहीं मिला!</h4>
+              <p class="text-xs text-gray-500 max-w-xs mx-auto">जब आप मसाले ऑर्डर करेंगे, तो उनकी लाइव ट्रैकिंग और रसीद यहाँ दिखाई देगी।</p>
+              <button onclick="window.app.closeModal(); window.app.switchTab('shop');" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition-all">
+                मसाला स्टोर देखें
+              </button>
+            </div>
+          ` : `
+            <div class="space-y-4">
+              ${orders.map(o => `
+                <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 space-y-3">
+                  <div class="flex items-center justify-between border-b border-stone-200 pb-2">
+                    <div>
+                      <span class="font-mono font-bold text-stone-900">${o.orderId}</span>
+                      <div class="text-[10px] text-stone-500">${o.dateFormatted || ''}</div>
+                    </div>
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+                      ${o.status}
+                    </span>
+                  </div>
+
+                  <!-- Visual Tracker -->
+                  <div class="grid grid-cols-4 gap-1 text-center py-1">
+                    <div class="flex flex-col items-center">
+                      <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">✓</div>
+                      <span class="text-[9px] text-emerald-800 font-bold mt-1">प्राप्त</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">✓</div>
+                      <span class="text-[9px] text-emerald-800 font-bold mt-1">पैकिंग</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold">🚚</div>
+                      <span class="text-[9px] text-amber-800 font-bold mt-1">रवाना</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                      <div class="w-6 h-6 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-[10px] font-bold">🏠</div>
+                      <span class="text-[9px] text-stone-400 font-medium mt-1">डिलीवर</span>
+                    </div>
+                  </div>
+
+                  <!-- Items list -->
+                  <div class="space-y-1 bg-white p-2.5 rounded-xl border border-stone-200 text-[11px]">
+                    ${o.items.map(i => `
+                      <div class="flex justify-between text-stone-700">
+                        <span>${i.name} (${i.weight}) x ${i.qty}</span>
+                        <span class="font-bold">₹${i.price * i.qty}</span>
+                      </div>
+                    `).join("")}
+                    <div class="flex justify-between font-bold text-stone-900 border-t border-stone-100 pt-1 mt-1">
+                      <span>कुल राशि:</span>
+                      <span class="text-red-600">₹${o.grandTotal}</span>
+                    </div>
+                  </div>
+
+                  <!-- Track via WhatsApp button -->
+                  <button onclick="window.app.trackOrderViaWhatsApp('${o.orderId}')" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors">
+                    <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>व्हाट्सएप पर स्थिति पूछें</span>
+                  </button>
+                </div>
+              `).join("")}
+            </div>
+          `}
+        </div>
+
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function trackOrderViaWhatsApp(orderId) {
+    const conf = state.data.config;
+    const msg = encodeURIComponent(`नमस्ते ज्योति दीदी! कृपया मेरे ऑर्डर की स्थिति बताएं:\n📦 ऑर्डर आईडी: ${orderId}`);
+    window.open(`https://wa.me/${conf.rawPhone || '919876543210'}?text=${msg}`, "_blank");
+  }
+
+  function openPolicyModal(policyType) {
+    const policies = typeof POLICIES_DATA !== "undefined" ? POLICIES_DATA : {};
+    const policy = policies[policyType] || policies.shipping;
+    if (!policy) return;
+
+    const modal = document.getElementById("universal-modal");
+    const container = document.getElementById("modal-dynamic-content");
+    if (!modal || !container) return;
+
+    container.innerHTML = `
+      <div class="relative bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-auto shadow-2xl modal-content-box border-2 border-amber-400 text-gray-800">
+        <div class="bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 text-white p-5 text-center relative border-b border-amber-500/30">
+          <button onclick="window.app.closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+          <h3 class="text-lg font-bold font-rozha">${policy.title}</h3>
+        </div>
+
+        <div class="p-6 space-y-3 text-xs leading-relaxed text-stone-700">
+          ${policy.points.map(p => `
+            <div class="flex items-start gap-2.5">
+              <span class="text-amber-600 font-bold shrink-0 mt-0.5">•</span>
+              <span>${p}</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="p-4 bg-stone-50 border-t border-stone-200 text-center">
+          <button onclick="window.app.closeModal()" class="bg-stone-900 hover:bg-stone-800 text-white font-bold px-6 py-2 rounded-xl text-xs transition-colors">
+            समझ गया (बंद करें)
+          </button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function openProductModal(productId) {
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    const prod = products.find(p => p.id === productId);
+    if (!prod) return;
+
+    const selectedWeight = state.selectedProductVariants[productId] || prod.variants[0].weight;
+    const currentVariant = prod.variants.find(v => v.weight === selectedWeight) || prod.variants[0];
+
+    const modal = document.getElementById("universal-modal");
+    const container = document.getElementById("modal-dynamic-content");
+    if (!modal || !container) return;
+
+    container.innerHTML = `
+      <div class="relative bg-white rounded-3xl overflow-hidden max-w-lg w-full mx-auto shadow-2xl modal-content-box border-2 border-amber-400 text-gray-800 max-h-[90vh] flex flex-col">
+        <button onclick="window.app.closeModal()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+
+        <div class="relative h-56 sm:h-64 shrink-0 overflow-hidden bg-stone-100">
+          <img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          
+          <div class="absolute bottom-4 left-4 right-4 text-white">
+            <span class="${prod.badgeColor || 'bg-red-600'} text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase shadow-xs mb-1.5 inline-block">
+              ${prod.badge || '100% शुद्ध'}
+            </span>
+            <h3 class="text-xl font-bold font-rozha leading-tight">${prod.name}</h3>
+            <p class="text-xs text-amber-200 mt-0.5">${prod.englishName}</p>
+          </div>
+        </div>
+
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+          
+          <p class="text-stone-700 leading-relaxed">${prod.description}</p>
+
+          ${prod.features ? `
+            <div class="space-y-1.5 bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200/80">
+              <h5 class="font-bold text-amber-950 uppercase tracking-wider text-[11px] mb-1">विशेषताएं (Key Highlights):</h5>
+              ${prod.features.map(f => `
+                <div class="flex items-center gap-2 text-stone-700">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>${f}</span>
+                </div>
+              `).join("")}
+            </div>
+          ` : ''}
+
+          <!-- Weight Variant Selector -->
+          <div class="space-y-2">
+            <label class="block font-bold text-stone-900 text-xs">वजन पैक चुनें (Select Weight):</label>
+            <div class="flex items-center gap-2 flex-wrap">
+              ${prod.variants.map(v => `
+                <button type="button" onclick="window.app.setProductVariant('${prod.id}', '${v.weight}'); window.app.openProductModal('${prod.id}');" class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${v.weight === currentVariant.weight ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-stone-50 hover:bg-amber-50 text-stone-700 border-stone-200'}">
+                  ${v.weight} - ₹${v.price}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+
+          <!-- Price & Savings -->
+          <div class="bg-stone-100 p-3.5 rounded-2xl flex items-center justify-between">
+            <div>
+              <div class="text-[10px] text-stone-500 uppercase font-bold">विशेष मूल्य</div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-black text-stone-900 font-mono">₹${currentVariant.price}</span>
+                <span class="text-xs text-stone-400 line-through">₹${currentVariant.mrp}</span>
+                <span class="text-xs font-bold text-emerald-600">${currentVariant.discount || ''}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                <i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i>
+                <span>स्टॉक में उपलब्ध</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="grid grid-cols-2 gap-2.5 pt-2">
+            <button onclick="window.app.addToCart('${prod.id}', '${currentVariant.weight}', 1, true); window.app.closeModal();" class="bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold py-3 rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2 active:scale-95">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+              <span>कार्ट में जोड़ें</span>
+            </button>
+            <button onclick="window.app.closeModal(); window.app.buyNow('${prod.id}', '${currentVariant.weight}');" class="bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold py-3 rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2 active:scale-95">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+              <span>अभी खरीदें (Buy Now)</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+    lucide.createIcons();
+  }
+
+  function setShopFilter(cat) {
+    state.shopCategoryFilter = cat;
+    renderShop();
+  }
+
+  function setShopSort(sort) {
+    state.shopSortFilter = sort;
+    renderShop();
+  }
+
+  function renderShop() {
+    const container = document.getElementById("tab-content-shop");
+    if (!container) return;
+
+    const products = state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : []);
+    let filtered = [...products];
+
+    if (state.shopCategoryFilter !== "all") {
+      filtered = filtered.filter(p => p.category === state.shopCategoryFilter);
+    }
+
+    if (state.activeSearch) {
+      const q = state.activeSearch.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        p.englishName.toLowerCase().includes(q) || 
+        p.description.toLowerCase().includes(q) ||
+        (p.tagline && p.tagline.toLowerCase().includes(q))
+      );
+    }
+
+    // Sorting
+    if (state.shopSortFilter === "price_asc") {
+      filtered.sort((a, b) => a.variants[0].price - b.variants[0].price);
+    } else if (state.shopSortFilter === "price_desc") {
+      filtered.sort((a, b) => b.variants[0].price - a.variants[0].price);
+    } else if (state.shopSortFilter === "rating") {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
+
+    const categories = [
+      { id: "all", label: "सभी उत्पाद (All Spices)" },
+      { id: "special_blend", label: "🥣 स्पेशल दाल व गरम मसाले" },
+      { id: "non_veg", label: "🍗 शाही चिकन व मटन" },
+      { id: "daily_spice", label: "🌿 शुद्ध खड़े व पिसे मसाले" },
+      { id: "tea_chaat", label: "☕ चाय व चाट मसाला" },
+      { id: "combo", label: "🎁 कॉम्बो गिफ्ट पैक्स" }
+    ];
+
+    container.innerHTML = `
+      <!-- Store Hero Banner -->
+      <section class="relative overflow-hidden rounded-3xl shadow-xl border border-amber-200/60 gradient-warm-bg mb-8">
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none"></div>
+        <div class="p-6 md:p-10 relative z-10">
+          <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 text-center lg:text-left">
+              <div class="inline-flex items-center gap-2 bg-red-600 text-white px-3.5 py-1 rounded-full text-xs font-bold shadow-sm">
+                <i data-lucide="store" class="w-3.5 h-3.5"></i>
+                <span>ज्योति मसाला स्टोर • 100% शुद्धता व स्वाद की गारंटी</span>
+              </div>
+              <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 font-rozha tracking-tight">
+                हाथ से भुने और कुटे <span class="text-red-600">असली देसी मसाले</span>
+              </h1>
+              <p class="text-xs sm:text-sm text-stone-600 max-w-xl">
+                बाजार के मिलावटी मसालों को अलविदा कहिए! ज्योति दीदी के घर पर तैयार शुद्ध खड़े मसाले, ढाबा दाल मसाला और नवाबी चिकन-मटन मसाले सीधे आपके किचन तक।
+              </p>
+            </div>
+
+            <!-- Free delivery banner pill -->
+            <div class="bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-amber-300 shadow-md text-center shrink-0 space-y-1">
+              <span class="text-xs font-extrabold text-stone-900 block">🚚 पूरे भारत में डिलीवरी उपलब्ध</span>
+              <span class="text-[11px] text-emerald-700 font-bold block">₹499+ के ऑर्डर पर मुफ़्त डिलीवरी</span>
+              <span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-amber-300">कोड: JYOTI10 (10% छूट)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Filter Pills & Sort Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <!-- Filter pills -->
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          ${categories.map(c => `
+            <button onclick="window.app.setShopFilter('${c.id}')" class="shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${state.shopCategoryFilter === c.id ? 'bg-red-600 text-white shadow-md' : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'}">
+              ${c.label}
+            </button>
+          `).join("")}
+        </div>
+
+        <!-- Sorting dropdown -->
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-xs text-stone-500 font-medium">सॉर्ट करें:</span>
+          <select onchange="window.app.setShopSort(this.value)" class="bg-white border border-stone-300 rounded-xl px-3 py-1.5 text-xs text-stone-800 font-bold focus:outline-none focus:border-amber-500">
+            <option value="popular" ${state.shopSortFilter === 'popular' ? 'selected' : ''}>🔥 सबसे लोकप्रिय</option>
+            <option value="price_asc" ${state.shopSortFilter === 'price_asc' ? 'selected' : ''}>कीमत: कम से ज्यादा</option>
+            <option value="price_desc" ${state.shopSortFilter === 'price_desc' ? 'selected' : ''}>कीमत: ज्यादा से कम</option>
+            <option value="rating" ${state.shopSortFilter === 'rating' ? 'selected' : ''}>⭐ उच्चतम रेटिंग</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        ${filtered.map(p => {
+          const selectedWeight = state.selectedProductVariants[p.id] || p.variants[0].weight;
+          const currentVariant = p.variants.find(v => v.weight === selectedWeight) || p.variants[0];
+
+          return `
+            <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm hover:shadow-xl transition-all card-hover-effect overflow-hidden flex flex-col justify-between group">
+              <div>
+                <!-- Image & Badges -->
+                <div class="relative h-48 overflow-hidden bg-stone-100 cursor-pointer" onclick="window.app.openProductModal('${p.id}')">
+                  <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  
+                  <span class="absolute top-2.5 left-2.5 ${p.badgeColor || 'bg-red-600'} text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md uppercase">
+                    ${p.badge || 'शुद्ध'}
+                  </span>
+
+                  <span class="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <span class="text-amber-400">★</span>
+                    <span>${p.rating}</span>
+                    <span class="text-stone-300">(${p.reviewsCount})</span>
+                  </span>
+
+                  <button type="button" onclick="event.stopPropagation(); window.app.toggleBookmark('products', '${p.id}');" class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center hover:scale-110 transition-transform">
+                    <i data-lucide="heart" class="w-4 h-4 text-red-500"></i>
+                  </button>
+                </div>
+
+                <!-- Product Info -->
+                <div class="p-4 space-y-2.5">
+                  <div class="cursor-pointer" onclick="window.app.openProductModal('${p.id}')">
+                    <h3 class="font-bold text-stone-900 text-sm group-hover:text-red-600 transition-colors line-clamp-1">${p.name}</h3>
+                    <p class="text-[11px] text-amber-800 font-medium line-clamp-1">${p.englishName}</p>
+                  </div>
+
+                  <p class="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">${p.description}</p>
+
+                  <!-- Weight Selector Pills -->
+                  <div class="space-y-1 pt-1">
+                    <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider">पैक आकार:</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      ${p.variants.map(v => `
+                        <button type="button" data-variant-btn="${p.id}" data-weight="${v.weight}" onclick="window.app.setProductVariant('${p.id}', '${v.weight}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${v.weight === currentVariant.weight ? 'bg-amber-600 text-white border-amber-600' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'}">
+                          ${v.weight}
+                        </button>
+                      `).join("")}
+                    </div>
+                  </div>
+
+                  <!-- Price Display -->
+                  <div class="flex items-baseline justify-between pt-2 border-t border-stone-100">
+                    <div class="flex items-baseline gap-1.5">
+                      <span id="prod-price-${p.id}" class="text-lg font-black text-stone-900 font-mono">₹${currentVariant.price}</span>
+                      <span id="prod-mrp-${p.id}" class="text-xs text-stone-400 line-through font-mono">₹${currentVariant.mrp}</span>
+                    </div>
+                    <span id="prod-discount-${p.id}" class="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      ${currentVariant.discount || 'छूट'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                <button type="button" onclick="window.app.addToCart('${p.id}', null, 1, true)" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold py-2 rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1 active:scale-95">
+                  <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                  <span>कार्ट में डालें</span>
+                </button>
+                <button type="button" onclick="window.app.buyNow('${p.id}')" class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-bold py-2 rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1 active:scale-95">
+                  <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                  <span>अभी खरीदें</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <!-- Customer Testimonials Section -->
+      <section class="mt-14 pt-10 border-t border-stone-200">
+        <div class="text-center max-w-xl mx-auto mb-8">
+          <span class="text-xs font-bold text-red-600 uppercase tracking-widest">सच्चे ग्राहक, सच्चा अनुभव</span>
+          <h2 class="text-2xl font-black text-stone-900 font-rozha mt-1">हमारे ग्राहकों की राय</h2>
+          <p class="text-xs text-stone-500 mt-1">भारत भर के 10,000+ संतुष्ट परिवारों ने ज्योति मसाला बॉक्स पर भरोसा जताया है।</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          ${(typeof TESTIMONIALS_DATA !== "undefined" ? TESTIMONIALS_DATA : []).map(t => `
+            <div class="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs space-y-2 flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center gap-1 text-amber-500 text-sm">
+                  ${'★'.repeat(t.rating)}
+                </div>
+                <p class="text-xs text-stone-600 italic leading-relaxed">"${t.review}"</p>
+              </div>
+              <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-stone-900 text-xs">${t.name}</h4>
+                  <span class="text-[10px] text-stone-400">${t.city}</span>
+                </div>
+                <span class="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">सत्यापित खरीदार</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    `;
+
+    lucide.createIcons();
+  }
+
   function speakText(text) {
     if (!('speechSynthesis' in window)) {
       alert("आपके ब्राउज़र में वॉइस सपोर्ट उपलब्ध नहीं है।");
@@ -396,6 +1639,11 @@
       if (target === "admin") {
         btn.classList.toggle("ring-2", active);
         btn.classList.toggle("ring-amber-400", active);
+      } else if (target === "shop") {
+        btn.classList.toggle("bg-red-600", active);
+        btn.classList.toggle("text-white", active);
+        btn.classList.toggle("bg-amber-500/10", !active);
+        btn.classList.toggle("text-amber-900", !active);
       } else {
         btn.classList.toggle("text-amber-600", active);
         btn.classList.toggle("border-b-2", active);
@@ -413,7 +1661,7 @@
       btn.classList.toggle("text-gray-600", !active);
     });
 
-    const tabs = ["dashboard", "tips", "masalas", "recipes", "favorites", "contact", "admin"];
+    const tabs = ["dashboard", "shop", "tips", "masalas", "recipes", "favorites", "contact", "admin"];
     tabs.forEach(t => {
       const el = document.getElementById(`tab-content-${t}`);
       if (el) {
@@ -424,6 +1672,7 @@
     closeMobileDrawer();
 
     if (tabId === "dashboard") renderDashboard();
+    if (tabId === "shop") renderShop();
     if (tabId === "tips") renderTips();
     if (tabId === "masalas") renderMasalas();
     if (tabId === "recipes") renderRecipes();
@@ -436,12 +1685,18 @@
 
   function openMobileDrawer() {
     const drawer = document.getElementById("mobile-menu-drawer");
-    if (drawer) drawer.classList.remove("translate-x-full");
+    if (drawer) {
+      drawer.classList.remove("-translate-x-full");
+      drawer.classList.add("translate-x-0");
+    }
   }
 
   function closeMobileDrawer() {
     const drawer = document.getElementById("mobile-menu-drawer");
-    if (drawer) drawer.classList.add("translate-x-full");
+    if (drawer) {
+      drawer.classList.add("-translate-x-full");
+      drawer.classList.remove("translate-x-0");
+    }
   }
 
   // --- ADMIN AUTHENTICATION CONTROLS ---
@@ -568,16 +1823,16 @@
 
             <!-- Quick Action Buttons -->
             <div class="flex flex-wrap items-center gap-3 pt-2">
-              <a href="${getWhatsAppUrl()}" target="_blank" class="inline-flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-emerald-600/30 transition-all card-hover-effect">
+              <button onclick="window.app.switchTab('shop')" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-red-600/30 transition-all card-hover-effect">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <span>🛍️ ऑनलाइन शॉप (मसाले खरीदें)</span>
+              </button>
+
+              <a href="${getWhatsAppUrl()}" target="_blank" class="inline-flex items-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:shadow-emerald-600/30 transition-all card-hover-effect">
                 <i data-lucide="message-circle" class="w-5 h-5"></i>
-                <span>व्हाट्सएप पर पूछें</span>
+                <span>व्हाट्सएप ऑर्डर</span>
               </a>
               
-              <a href="${getTelUrl()}" class="inline-flex items-center gap-2.5 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-red-600/30 transition-all card-hover-effect">
-                <i data-lucide="phone-call" class="w-5 h-5"></i>
-                <span>डायरेक्ट कॉल करें</span>
-              </a>
-
               <button onclick="window.app.switchTab('tips')" class="inline-flex items-center gap-2 bg-white hover:bg-amber-50 text-amber-900 border border-amber-300 px-5 py-3 rounded-xl font-semibold shadow-sm transition-all">
                 <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600"></i>
                 <span>किचन हैक्स देखें</span>
@@ -611,6 +1866,164 @@
                 <div class="text-xs font-bold text-gray-900">${conf.experience}</div>
                 <div class="text-[11px] text-gray-500">${conf.chefName}</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- E-Commerce Trust Badges Strip -->
+      <section class="mb-10 bg-white rounded-2xl border border-amber-200/80 p-4 sm:p-5 shadow-sm">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-stone-100">
+          <div class="flex items-center gap-3 p-2">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+              <i data-lucide="sparkles" class="w-5 h-5 text-amber-700"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-xs sm:text-sm">100% शुद्ध व प्राकृतिक</h4>
+              <p class="text-[11px] text-stone-500">कोई मिलावट या कृत्रिम रंग नहीं</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 p-2">
+            <div class="w-10 h-10 rounded-xl bg-red-100 text-red-800 flex items-center justify-center shrink-0">
+              <i data-lucide="truck" class="w-5 h-5 text-red-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-xs sm:text-sm">मुफ़्त डिलीवरी (₹499+)</h4>
+              <p class="text-[11px] text-stone-500">पूरे भारत में सुरक्षित पैकेजिंग</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 p-2">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+              <i data-lucide="wallet" class="w-5 h-5 text-emerald-700"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-xs sm:text-sm">कैश ऑन डिलीवरी (COD)</h4>
+              <p class="text-[11px] text-stone-500">UPI व कार्ड द्वारा भी सुरक्षित भुगतान</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 p-2">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-5 h-5 text-purple-700"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-stone-900 text-xs sm:text-sm">7-दिन रिफंड गारंटी</h4>
+              <p class="text-[11px] text-stone-500">संतुष्टि नहीं तो तुरंत पैसा वापस</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured Bestseller Products -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+              <span class="text-xs font-bold text-red-600 uppercase tracking-wider">ऑनलाइन स्टोर स्पेशल</span>
+            </div>
+            <h2 class="text-2xl font-black text-stone-900 font-rozha mt-1">
+              🔥 सर्वाधिक बिकने वाले शुद्ध मसाले (Bestsellers)
+            </h2>
+            <p class="text-xs sm:text-sm text-stone-500 mt-0.5">हाथ से भुने और कुटे शुद्ध देसी मसाले सीधे आपके किचन में</p>
+          </div>
+          <button onclick="window.app.switchTab('shop')" class="text-xs sm:text-sm font-bold text-red-600 hover:text-red-700 flex items-center gap-1 group">
+            <span>सभी 12+ मसाले देखें</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          ${(state.data.products || (typeof PRODUCTS_DATA !== "undefined" ? PRODUCTS_DATA : [])).slice(0, 4).map(p => {
+            const selectedWeight = state.selectedProductVariants[p.id] || p.variants[0].weight;
+            const currentVariant = p.variants.find(v => v.weight === selectedWeight) || p.variants[0];
+            return `
+              <div class="bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-xl transition-all card-hover-effect overflow-hidden flex flex-col justify-between group">
+                <div>
+                  <div class="relative h-44 overflow-hidden bg-stone-100 cursor-pointer" onclick="window.app.openProductModal('${p.id}')">
+                    <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <span class="absolute top-2.5 left-2.5 ${p.badgeColor || 'bg-red-600'} text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md uppercase">
+                      ${p.badge || 'बेस्टसेलर'}
+                    </span>
+                    <span class="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <span class="text-amber-400">★</span>
+                      <span>${p.rating}</span>
+                      <span class="text-stone-300">(${p.reviewsCount})</span>
+                    </span>
+                  </div>
+
+                  <div class="p-4 space-y-2">
+                    <div class="cursor-pointer" onclick="window.app.openProductModal('${p.id}')">
+                      <h3 class="font-bold text-stone-900 text-sm group-hover:text-red-600 transition-colors line-clamp-1">${p.name}</h3>
+                      <p class="text-[11px] text-amber-800 font-medium line-clamp-1">${p.englishName}</p>
+                    </div>
+
+                    <!-- Weight selection pills -->
+                    <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                      ${p.variants.map(v => `
+                        <button type="button" data-variant-btn="${p.id}" data-weight="${v.weight}" onclick="window.app.setProductVariant('${p.id}', '${v.weight}')" class="px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors ${v.weight === currentVariant.weight ? 'bg-amber-600 text-white border-amber-600' : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'}">
+                          ${v.weight}
+                        </button>
+                      `).join("")}
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-baseline justify-between pt-2 border-t border-stone-100">
+                      <div class="flex items-baseline gap-1.5">
+                        <span data-prod-price="${p.id}" id="prod-price-${p.id}" class="text-base font-black text-stone-900 font-mono">₹${currentVariant.price}</span>
+                        <span data-prod-mrp="${p.id}" id="prod-mrp-${p.id}" class="text-[11px] text-stone-400 line-through font-mono">₹${currentVariant.mrp}</span>
+                      </div>
+                      <span data-prod-discount="${p.id}" id="prod-discount-${p.id}" class="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        ${currentVariant.discount || 'छूट'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 pt-0 grid grid-cols-2 gap-2">
+                  <button type="button" onclick="window.app.addToCart('${p.id}', null, 1, true)" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold py-2 rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1 active:scale-95">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>कार्ट में डालें</span>
+                  </button>
+                  <button type="button" onclick="window.app.buyNow('${p.id}')" class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-bold py-2 rounded-xl text-xs shadow-sm transition-all flex items-center justify-center gap-1 active:scale-95">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                    <span>खरीदें</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+
+        <!-- 5-in-1 Combo Pack Promotion Card -->
+        <div class="mt-6 bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-amber-500/30">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+            <div class="md:col-span-8 space-y-3">
+              <span class="inline-block bg-amber-500 text-stone-950 font-extrabold text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
+                🎁 स्पेशल कॉम्बो ऑफर • 22% की बचत
+              </span>
+              <h3 class="text-xl sm:text-2xl font-bold font-rozha">5-इन-1 मास्टर मसाला बॉक्स (5 Master Spices Pack)</h3>
+              <p class="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-xl">
+                ढाबा दाल मसाला, नवाबी चिकन, शाही मटन, असली गरम मसाला और कड़क चाय मसाला - एक ही प्रीमियम गिफ्ट बॉक्स में! हर भारतीय रसोई के लिए एक संपूर्ण उपहार।
+              </p>
+              <div class="flex items-baseline gap-3 pt-1">
+                <span class="text-2xl sm:text-3xl font-black text-amber-400 font-mono">₹499</span>
+                <span class="text-sm text-stone-400 line-through font-mono">₹640</span>
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/40">₹141 की बचत + मुफ़्त डिलीवरी</span>
+              </div>
+            </div>
+
+            <div class="md:col-span-4 flex flex-col sm:flex-row md:flex-col gap-2.5">
+              <button onclick="window.app.addToCart('prod_combo_master', '500g (5x100g)', 1, true)" class="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold py-3 rounded-2xl text-xs shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                <span>कॉम्बो कार्ट में डालें</span>
+              </button>
+              <button onclick="window.app.buyNow('prod_combo_master', '500g (5x100g)')" class="w-full bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 active:scale-95">
+                <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                <span>सीधे ऑर्डर करें (Buy Now)</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1121,14 +2534,20 @@
               </div>
             </div>
 
-            <div class="p-5 pt-0 flex gap-2">
-              <button onclick="window.app.openMasalaModal('${m.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                <i data-lucide="scale" class="w-4 h-4"></i>
-                <span>विधि व अनुपात देखें</span>
+            <div class="p-5 pt-0 flex flex-col sm:flex-row gap-2">
+              <button onclick="window.app.openMasalaModal('${m.id}')" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="scale" class="w-3.5 h-3.5 text-stone-600"></i>
+                <span>विधि व अनुपात</span>
               </button>
-              <button onclick="window.app.openAdminEditMasala('${m.id}')" title="एडिट करें" class="px-3 bg-gray-100 hover:bg-red-100 text-gray-700 rounded-xl transition-colors">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              <button onclick="window.app.quickAddLinkedProductToCart('${m.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                <span>पैक खरीदें</span>
               </button>
+              ${state.isAdminLoggedIn ? `
+                <button onclick="window.app.openAdminEditMasala('${m.id}')" title="एडिट करें" class="px-3 py-2.5 bg-stone-100 hover:bg-red-100 text-stone-700 rounded-xl transition-colors shrink-0">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
         `).join("")}
@@ -3142,12 +4561,13 @@
   // --- SEARCH ENGINE ---
   function handleSearchInput(e) {
     state.activeSearch = e.target.value;
-    if (state.currentTab === "tips") renderTips();
+    if (state.currentTab === "shop") renderShop();
+    else if (state.currentTab === "tips") renderTips();
     else if (state.currentTab === "masalas") renderMasalas();
     else if (state.currentTab === "recipes") renderRecipes();
     else {
       if (state.activeSearch.length > 2) {
-        switchTab("tips");
+        switchTab("shop");
       }
     }
   }
@@ -3330,7 +4750,7 @@
 
   function init() {
     const hash = window.location.hash.replace("#", "");
-    if (["dashboard", "tips", "masalas", "recipes", "favorites", "contact"].includes(hash)) {
+    if (["dashboard", "shop", "tips", "masalas", "recipes", "favorites", "contact"].includes(hash)) {
       switchTab(hash, false);
     } else if (hash === "admin" && state.isAdminLoggedIn) {
       switchTab("admin", false);
@@ -3339,6 +4759,7 @@
     }
 
     updateBookmarkBadge();
+    updateCartBadges();
     updateGlobalHeaderAndFooter();
     updateAdminVisibility();
 
@@ -3406,6 +4827,29 @@
     sendQueryViaWhatsApp,
     setTheme,
     showerExtraPetals: function () {}, // Assigned in initRosePetalRain
+    // E-Commerce Store & Cart Handlers
+    addToCart,
+    buyNow,
+    quickAddLinkedProductToCart,
+    updateCartQty,
+    removeFromCart,
+    clearCart,
+    applyCoupon,
+    removeCoupon,
+    openCartDrawer,
+    closeCartDrawer,
+    openCheckoutModal,
+    handlePlaceOrder,
+    openOrderSuccessModal,
+    orderViaWhatsAppDirect,
+    openMyOrdersModal,
+    trackOrderViaWhatsApp,
+    openPolicyModal,
+    openProductModal,
+    setProductVariant,
+    setShopFilter,
+    setShopSort,
+    renderShop,
     // Admin Authentication Handlers
     openAdminLoginModal,
     closeAdminLoginModal,

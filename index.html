@@ -46,44 +46,59 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-amber-500 selection:text-white pb-20 sm:pb-0">
 
-  <!-- Top Sleek Announcement Bar -->
-  <aside class="bg-gradient-to-r from-red-700 via-amber-600 to-red-700 text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium shadow-sm flex items-center justify-center gap-2">
-    <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-300"></i>
-    <span>किचन इमरजेंसी? सब्जी में ज्यादा तेल या दाल जल गई? तुरंत समाधान के लिए नीचे 'किचन SOS' पर क्लिक करें!</span>
+  <!-- Top Sleek E-Commerce Announcement Bar -->
+  <aside class="bg-gradient-to-r from-red-800 via-amber-700 to-red-800 text-white text-[11px] sm:text-xs py-1.5 px-3 sm:px-6 shadow-sm flex items-center justify-between gap-2 overflow-hidden">
+    <div class="flex items-center gap-1.5 truncate">
+      <span class="inline-flex items-center gap-1 bg-amber-400 text-stone-900 font-extrabold text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded shadow-xs shrink-0">
+        🚚 मुफ़्त डिलीवरी
+      </span>
+      <span class="truncate">₹499+ के ऑर्डर पर पूरे भारत में फ्री डिलीवरी | कूपन <strong class="text-amber-200">JYOTI10</strong> से 10% की सीधी छूट!</span>
+    </div>
+    <div class="hidden md:flex items-center gap-4 shrink-0 text-[11px] font-semibold">
+      <button onclick="window.app.openMyOrdersModal()" class="hover:text-amber-200 transition-colors flex items-center gap-1">
+        <i data-lucide="package-check" class="w-3.5 h-3.5"></i>
+        <span>ऑर्डर ट्रैक करें</span>
+      </button>
+      <span class="text-amber-300/40">|</span>
+      <a href="tel:+919876543210" class="hover:text-amber-200 transition-colors flex items-center gap-1">
+        <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+        <span>हेल्पलाइन: +91 98765 43210</span>
+      </a>
+    </div>
   </aside>
 
-  <!-- Clean, Elegant Header with Small Ganesha Murti -->
+  <!-- Clean, Elegant Header with Small Ganesha Murti & Intuitive E-Commerce Layout -->
   <header id="main-header" class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-amber-200/80 shadow-sm transition-all">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
       <div class="flex items-center justify-between h-20 gap-2 sm:gap-4">
         
-        <!-- Left: Cute Small Ganesha Murti + Brand Title & Tagline -->
-        <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 min-w-0">
+        <!-- Left: Menu Icon (Accessible & Correctly Positioned on Left for Mobile) + 3D Ganesha Idol + Brand Title -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           
-          <!-- Clean 3D Ganesh Ji Idol Icon with EXCLUSIVE Rose Petals Rain -->
+          <!-- Menu Toggle Button: Hamburger Menu icon placed prominently and intuitively -->
+          <button onclick="window.app.openMobileDrawer()" class="lg:hidden p-2 rounded-xl text-stone-800 hover:text-amber-600 hover:bg-amber-50 active:scale-95 transition-all border border-amber-200/60 shadow-2xs" title="नेविगेशन मेनू खोलें">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+
+          <!-- 3D Ganesh Ji Idol Icon with Rose Petals Rain -->
           <div class="ganesh-3d-icon-badge" title="भगवान श्री गणेश जी - गुलाब के फूलों की वर्षा (क्लिक करें)" onclick="window.app.showerExtraPetals()">
-            <!-- Clean 3D Ganesh Ji Idol Image -->
             <img src="ganesh-3d.jpg" alt="श्री गणेश जी 3D मूर्ति" class="ganesh-3d-img" />
-            
-            <!-- Dedicated Rose Flower Rain Canvas (EXCLUSIVELY OVER GANESH ICON) -->
             <canvas id="ganesh-murti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
-            
-            <!-- Subtle Divine Gold Edge Ring -->
             <div class="absolute inset-0 rounded-[14px] sm:rounded-[16px] ring-1 ring-inset ring-amber-400/50 pointer-events-none z-20"></div>
           </div>
 
-          <!-- Brand Logo & Tagline -->
-          <div class="cursor-pointer shrink-0 flex flex-col justify-center select-none" onclick="window.app.switchTab('dashboard')">
-            <div class="flex items-center gap-1.5 sm:gap-2 leading-none whitespace-nowrap">
-              <span class="brand-title text-lg sm:text-xl md:text-2xl font-black text-stone-900 tracking-tight">
+          <!-- Brand Logo & Tagline (clean, responsive, no horizontal overflow) -->
+          <div class="cursor-pointer shrink min-w-0 flex flex-col justify-center select-none" onclick="window.app.switchTab('dashboard')">
+            <div class="flex items-center gap-1.5 leading-none">
+              <span class="brand-title text-base sm:text-xl md:text-2xl font-black text-stone-900 tracking-tight truncate">
                 Jyoti Masala Box
               </span>
-              <span class="text-[9px] sm:text-[10px] bg-gradient-to-r from-red-600 to-amber-600 text-white font-extrabold px-2 py-0.5 rounded-full shadow-2xs hidden md:inline-block whitespace-nowrap">
-                ज्योति मसाला बॉक्स
+              <span class="text-[9px] sm:text-[10px] bg-gradient-to-r from-red-600 to-amber-600 text-white font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full shadow-2xs hidden sm:inline-block shrink-0">
+                मसाला स्टोर
               </span>
             </div>
-            <p class="text-[9.5px] sm:text-[11px] text-amber-900/90 font-semibold tracking-wide mt-1 leading-none whitespace-nowrap">
-              घर का स्वाद, असली मसाले और दादी के नुस्खे
+            <p class="text-[9px] sm:text-[11px] text-amber-900/90 font-semibold tracking-tight sm:tracking-wide mt-1 leading-none truncate max-w-[150px] sm:max-w-none">
+              घर का स्वाद, 100% शुद्ध मसाले
             </p>
           </div>
 
@@ -92,10 +107,11 @@
         <!-- Desktop Navigation Links -->
         <nav class="hidden lg:flex items-center gap-1 xl:gap-1.5 shrink-0">
           <button onclick="window.app.switchTab('dashboard')" data-target="dashboard" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
-            📊 डैशबोर्ड
+            🏠 होम
           </button>
-          <button onclick="window.app.switchTab('tips')" data-target="tips" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
-            💡 टिप्स
+          <button onclick="window.app.switchTab('shop')" data-target="shop" class="nav-link-btn px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold transition-all whitespace-nowrap bg-amber-500/10 text-amber-900 border border-amber-300/80 hover:bg-amber-500 hover:text-white flex items-center gap-1.5">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span>🛍️ ऑनलाइन शॉप</span>
           </button>
           <button onclick="window.app.switchTab('masalas')" data-target="masalas" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
             🌿 मसाले
@@ -103,9 +119,15 @@
           <button onclick="window.app.switchTab('recipes')" data-target="recipes" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
             🍲 रेसिपीज़
           </button>
+          <button onclick="window.app.switchTab('tips')" data-target="tips" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
+            💡 कुकिंग टिप्स
+          </button>
           <button onclick="window.app.switchTab('favorites')" data-target="favorites" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all relative whitespace-nowrap">
             ❤️ पसंदीदा
             <span class="bookmark-count-badge hidden absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+          </button>
+          <button onclick="window.app.openMyOrdersModal()" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-1">
+            📦 ऑर्डर्स
           </button>
           <button onclick="window.app.switchTab('contact')" data-target="contact" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
             📞 संपर्क
@@ -116,87 +138,109 @@
           </button>
         </nav>
 
-        <!-- Search & Action Buttons -->
-        <div class="hidden sm:flex items-center gap-2 xl:gap-3 shrink-0">
-          <!-- Live Search Bar -->
-          <div class="relative hidden 2xl:block xl:block">
-            <input type="text" placeholder="सब्जी में तेल, दाल..." class="universal-search-input w-36 xl:w-44 bg-amber-50/70 border border-amber-300/80 rounded-xl pl-8 pr-3 py-1.5 text-xs text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all" />
+        <!-- Right Side: Search + Wishlist + Cart + Actions -->
+        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <!-- Desktop Search Input -->
+          <div class="relative hidden md:block">
+            <input type="text" placeholder="मसाले, दाल, चिकन, टिप्स खोजें..." class="universal-search-input w-40 lg:w-48 xl:w-56 bg-amber-50/70 border border-amber-300/80 rounded-xl pl-8 pr-3 py-1.5 text-xs text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all" />
             <i data-lucide="search" class="w-3.5 h-3.5 text-amber-700 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
           </div>
 
-          <!-- WhatsApp Chat Direct Button -->
-          <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20कुकिंग%20टिप्स%20और%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all pulse-glow-green whitespace-nowrap">
+          <!-- Wishlist Button -->
+          <button onclick="window.app.switchTab('favorites')" class="p-2 text-stone-700 hover:text-red-600 relative rounded-xl hover:bg-stone-50 transition-colors" title="पसंदीदा सूची">
+            <i data-lucide="heart" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+            <span class="bookmark-count-badge hidden absolute top-0.5 right-0.5 bg-red-600 text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center">0</span>
+          </button>
+
+          <!-- Shopping Cart Button (Hero e-commerce feature in header) -->
+          <button onclick="window.app.openCartDrawer()" class="header-cart-btn relative inline-flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white font-extrabold px-3 py-2 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 group" title="शॉपिंग कार्ट खोलें">
+            <div class="relative">
+              <i data-lucide="shopping-bag" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+              <span id="header-cart-badge" class="absolute -top-2 -right-2 bg-yellow-300 text-red-950 font-black text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm">0</span>
+            </div>
+            <span class="hidden sm:inline text-xs font-bold">कार्ट</span>
+            <span id="header-cart-total" class="hidden xl:inline text-[11px] bg-black/20 px-1.5 py-0.5 rounded font-mono font-bold">₹0</span>
+          </button>
+
+          <!-- WhatsApp Chat Button (Compact & elegant) -->
+          <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="hidden sm:inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-2.5 py-2 rounded-xl shadow-sm transition-all" title="व्हाट्सएप पर ऑर्डर व सहायता">
             <i data-lucide="message-circle" class="w-4 h-4"></i>
-            <span>व्हाट्सएप</span>
+            <span class="hidden xl:inline">व्हाट्सएप</span>
           </a>
-
-          <!-- Direct Calling Button -->
-          <a href="tel:+919876543210" class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm transition-all whitespace-nowrap">
-            <i data-lucide="phone" class="w-4 h-4"></i>
-            <span>कॉल</span>
-          </a>
-        </div>
-
-        <!-- Mobile Menu Toggle Button -->
-        <div class="flex items-center gap-2 lg:hidden">
-          <button onclick="window.app.switchTab('favorites')" class="p-2 text-gray-700 relative">
-            <i data-lucide="heart" class="w-6 h-6"></i>
-            <span class="bookmark-count-badge hidden absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-          </button>
-          
-          <button onclick="window.app.openMobileDrawer()" class="p-2 text-gray-800 hover:text-amber-600 focus:outline-none">
-            <i data-lucide="menu" class="w-7 h-7"></i>
-          </button>
         </div>
 
       </div>
     </div>
   </header>
 
-  <!-- Mobile Drawer Menu -->
-  <aside id="mobile-menu-drawer" class="fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-2xl p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out border-l border-amber-200 lg:hidden">
+  <!-- Mobile Drawer Menu (Sliding from Left with full navigation) -->
+  <aside id="mobile-menu-drawer" class="fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl p-6 flex flex-col justify-between transform -translate-x-full transition-transform duration-300 ease-in-out border-r border-amber-200 lg:hidden overflow-y-auto">
     <div>
-      <div class="flex items-center justify-between pb-6 border-b border-gray-100">
+      <div class="flex items-center justify-between pb-5 border-b border-gray-100">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🌶️</span>
-          <span class="font-bold text-gray-900 font-rozha">Jyoti Masala Box</span>
+          <div>
+            <span class="font-bold text-gray-900 font-rozha text-lg block leading-none">Jyoti Masala Box</span>
+            <span class="text-[10px] text-amber-700 font-medium">100% शुद्ध घरेलू मसाले</span>
+          </div>
         </div>
-        <button onclick="window.app.closeMobileDrawer()" class="p-2 text-gray-500 hover:text-gray-900">
+        <button onclick="window.app.closeMobileDrawer()" class="p-2 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100" title="मेनू बंद करें">
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
 
       <!-- Mobile Search -->
-      <div class="relative mt-6 mb-6">
-        <input type="text" placeholder="सब्जी में तेल, दाल, जलेबी..." class="universal-search-input w-full bg-amber-50 border border-amber-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800" />
+      <div class="relative mt-5 mb-5">
+        <input type="text" placeholder="मसाले, दाल, चिकन, टिप्स खोजें..." class="universal-search-input w-full bg-amber-50 border border-amber-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-gray-800" />
         <i data-lucide="search" class="w-4 h-4 text-amber-700 absolute left-3 top-1/2 -translate-y-1/2"></i>
       </div>
 
       <!-- Navigation links -->
-      <nav class="space-y-2">
-        <button onclick="window.app.switchTab('dashboard')" data-target="dashboard" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
-          <i data-lucide="layout-dashboard" class="w-5 h-5 text-amber-600"></i>
-          <span>डैशबोर्ड</span>
+      <nav class="space-y-1.5 text-sm font-semibold">
+        <button onclick="window.app.switchTab('shop')" data-target="shop" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-between bg-gradient-to-r from-red-50 to-amber-50 text-red-900 border border-red-200 shadow-xs">
+          <span class="flex items-center gap-3">
+            <i data-lucide="store" class="w-5 h-5 text-red-600"></i>
+            <span>🛍️ ऑनलाइन मसाला स्टोर (Shop)</span>
+          </span>
+          <span class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase">ऑफर</span>
         </button>
-        <button onclick="window.app.switchTab('tips')" data-target="tips" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
-          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-600"></i>
-          <span>टिप्स & ट्रिक्स</span>
+        <button onclick="window.app.openCartDrawer(); window.app.closeMobileDrawer();" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center justify-between hover:bg-amber-50 text-gray-800">
+          <span class="flex items-center gap-3">
+            <i data-lucide="shopping-cart" class="w-5 h-5 text-amber-600"></i>
+            <span>🛒 मेरी शॉपिंग कार्ट (Cart)</span>
+          </span>
+          <span id="mobile-drawer-cart-badge" class="bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">0</span>
         </button>
-        <button onclick="window.app.switchTab('masalas')" data-target="masalas" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
-          <i data-lucide="package" class="w-5 h-5 text-red-600"></i>
-          <span>मसाले बनाने की विधि</span>
+        <button onclick="window.app.openMyOrdersModal(); window.app.closeMobileDrawer();" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
+          <i data-lucide="package" class="w-5 h-5 text-amber-600"></i>
+          <span>📦 मेरे ऑर्डर्स (Track Order)</span>
         </button>
-        <button onclick="window.app.switchTab('recipes')" data-target="recipes" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+        <button onclick="window.app.switchTab('dashboard')" data-target="dashboard" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
+          <i data-lucide="home" class="w-5 h-5 text-amber-600"></i>
+          <span>🏠 होम डैशबोर्ड</span>
+        </button>
+        <button onclick="window.app.switchTab('masalas')" data-target="masalas" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
+          <i data-lucide="sparkles" class="w-5 h-5 text-red-600"></i>
+          <span>🌿 मसाले बनाने की विधि</span>
+        </button>
+        <button onclick="window.app.switchTab('recipes')" data-target="recipes" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
           <i data-lucide="utensils" class="w-5 h-5 text-amber-600"></i>
-          <span>सभी रेसिपीज़</span>
+          <span>🍲 सभी रेसिपीज़</span>
         </button>
-        <button onclick="window.app.switchTab('favorites')" data-target="favorites" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
-          <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
-          <span>पसंदीदा लिस्ट</span>
+        <button onclick="window.app.switchTab('tips')" data-target="tips" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-600"></i>
+          <span>💡 कुकिंग टिप्स & ट्रिक्स</span>
         </button>
-        <button onclick="window.app.switchTab('contact')" data-target="contact" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-amber-50">
+        <button onclick="window.app.switchTab('favorites')" data-target="favorites" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center justify-between hover:bg-amber-50 text-gray-800">
+          <span class="flex items-center gap-3">
+            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+            <span>❤️ पसंदीदा सूची (Wishlist)</span>
+          </span>
+          <span class="bookmark-count-badge hidden bg-red-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+        </button>
+        <button onclick="window.app.switchTab('contact')" data-target="contact" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 hover:bg-amber-50 text-gray-800">
           <i data-lucide="phone-call" class="w-5 h-5 text-emerald-600"></i>
-          <span>संपर्क व सहायता</span>
+          <span>📞 संपर्क व सहायता</span>
         </button>
         <button id="mobile-menu-admin-btn" onclick="window.app.switchTab('admin')" data-target="admin" class="admin-only-control hidden mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 bg-amber-50 text-amber-900 border border-amber-300">
           <i data-lucide="settings-2" class="w-5 h-5 text-amber-600"></i>
@@ -206,56 +250,64 @@
     </div>
 
     <!-- Quick action footer in mobile drawer -->
-    <div class="pt-6 border-t border-gray-100 space-y-2">
-      <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20कुकिंग%20टिप्स%20और%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
+    <div class="pt-6 border-t border-gray-100 space-y-2 mt-4">
+      <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20मसालों%20के%20बारे%20में%20पूछना%20है।" target="_blank" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
         <i data-lucide="message-circle" class="w-4 h-4"></i>
-        <span>व्हाट्सएप पर पूछें</span>
+        <span>व्हाट्सएप पर ऑर्डर करें</span>
       </a>
       <a href="tel:+919876543210" class="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
         <i data-lucide="phone" class="w-4 h-4"></i>
-        <span>डायरेक्ट कॉल करें</span>
+        <span>हेल्पलाइन पर कॉल करें</span>
       </a>
     </div>
   </aside>
 
-  <!-- Mobile Sticky Quick Actions Bar -->
-  <div class="mobile-sticky-actions sm:hidden px-4 py-2.5 flex items-center justify-around">
-    <button onclick="window.app.switchTab('dashboard')" class="flex flex-col items-center text-[10px] text-gray-700">
+  <!-- Mobile Sticky Quick Actions Bar (Bottom App Navigation) -->
+  <div class="mobile-sticky-actions sm:hidden px-3 py-2 flex items-center justify-around border-t border-amber-200/80 bg-white/95 backdrop-blur-md shadow-lg">
+    <button onclick="window.app.switchTab('dashboard')" class="flex flex-col items-center text-[10px] text-gray-700 hover:text-amber-700 transition-colors">
       <i data-lucide="home" class="w-5 h-5"></i>
-      <span>होम</span>
+      <span class="mt-0.5 font-medium">होम</span>
     </button>
-    <button onclick="window.app.switchTab('tips')" class="flex flex-col items-center text-[10px] text-amber-700 font-bold">
-      <i data-lucide="lightbulb" class="w-5 h-5"></i>
-      <span>टिप्स</span>
+    <button onclick="window.app.switchTab('shop')" class="flex flex-col items-center text-[10px] text-red-600 font-extrabold hover:text-red-700 transition-colors">
+      <i data-lucide="store" class="w-5 h-5"></i>
+      <span class="mt-0.5">शॉप</span>
     </button>
-    <button onclick="window.app.switchTab('masalas')" class="flex flex-col items-center text-[10px] text-red-700 font-bold">
-      <i data-lucide="package" class="w-5 h-5"></i>
-      <span>मसाले</span>
+    <button onclick="window.app.openCartDrawer()" class="flex flex-col items-center text-[10px] text-amber-700 font-extrabold relative transition-colors">
+      <div class="relative">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+        <span id="mobile-bar-cart-badge" class="absolute -top-1.5 -right-2.5 bg-red-600 text-white text-[9px] font-black min-w-4 h-4 px-1 rounded-full flex items-center justify-center shadow-xs">0</span>
+      </div>
+      <span class="mt-0.5">कार्ट</span>
     </button>
-    <button onclick="window.app.switchTab('recipes')" class="flex flex-col items-center text-[10px] text-amber-800 font-bold">
-      <i data-lucide="utensils" class="w-5 h-5"></i>
-      <span>रेसिपीज़</span>
+    <button onclick="window.app.openMyOrdersModal()" class="flex flex-col items-center text-[10px] text-gray-700 hover:text-amber-700 transition-colors">
+      <i data-lucide="package-check" class="w-5 h-5"></i>
+      <span class="mt-0.5 font-medium">ऑर्डर्स</span>
     </button>
-    <button id="mobile-bar-admin-btn" onclick="window.app.switchTab('admin')" class="admin-only-control hidden flex flex-col items-center text-[10px] text-purple-700 font-bold">
-      <i data-lucide="settings" class="w-5 h-5"></i>
-      <span>कस्टमाइज़</span>
+    <button onclick="window.app.openMobileDrawer()" class="flex flex-col items-center text-[10px] text-gray-700 hover:text-amber-700 transition-colors">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+      <span class="mt-0.5 font-medium">मेनू</span>
     </button>
-    <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!" target="_blank" class="flex flex-col items-center text-[10px] text-emerald-600 font-bold">
-      <i data-lucide="message-circle" class="w-5 h-5"></i>
-      <span>व्हाट्सएप</span>
-    </a>
   </div>
 
   <!-- Main Dynamic Workspace View -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div id="tab-content-dashboard"></div>
-    <div id="tab-content-tips" class="hidden"></div>
+    <div id="tab-content-shop" class="hidden"></div>
     <div id="tab-content-masalas" class="hidden"></div>
     <div id="tab-content-recipes" class="hidden"></div>
+    <div id="tab-content-tips" class="hidden"></div>
     <div id="tab-content-favorites" class="hidden"></div>
     <div id="tab-content-contact" class="hidden"></div>
     <div id="tab-content-admin" class="hidden"></div>
   </main>
+
+  <!-- Slide-Over Shopping Cart Drawer Component -->
+  <div id="cart-drawer-overlay" class="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs hidden transition-opacity" onclick="window.app.closeCartDrawer()"></div>
+  <aside id="cart-drawer" class="fixed inset-y-0 right-0 z-[230] w-full max-w-md bg-white shadow-2xl flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out border-l border-amber-200">
+    <div id="cart-drawer-content" class="h-full flex flex-col">
+      <!-- Populated dynamically by app.js renderCartDrawer() -->
+    </div>
+  </aside>
 
   <!-- Universal Modal Component -->
   <div id="universal-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm modal-overlay">
@@ -405,19 +457,64 @@
     </div>
   </div>
 
-  <!-- Footer Section -->
+  <!-- Modern E-Commerce Footer Section -->
   <footer class="bg-stone-900 text-stone-300 pt-16 pb-12 border-t-4 border-amber-500 no-print mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-stone-800">
+      
+      <!-- Trust Strip in Footer Top -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pb-12 border-b border-stone-800 text-center">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-3 rounded-2xl bg-stone-800/40 border border-stone-700/50">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div class="text-left">
+            <h5 class="text-xs font-bold text-white">100% शुद्ध व मिलावट रहित</h5>
+            <p class="text-[10px] text-stone-400">प्राकृतिक व पारंपरिक कुटाई</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-3 rounded-2xl bg-stone-800/40 border border-stone-700/50">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <div class="text-left">
+            <h5 class="text-xs font-bold text-white">₹499+ पर फ्री डिलीवरी</h5>
+            <p class="text-[10px] text-stone-400">पूरे भारत में 2-4 दिन में</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-3 rounded-2xl bg-stone-800/40 border border-stone-700/50">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+            <i data-lucide="banknote" class="w-5 h-5"></i>
+          </div>
+          <div class="text-left">
+            <h5 class="text-xs font-bold text-white">कैश ऑन डिलीवरी (COD)</h5>
+            <p class="text-[10px] text-stone-400">घर पर भुगतान की सुविधा</p>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 p-3 rounded-2xl bg-stone-800/40 border border-stone-700/50">
+          <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+          </div>
+          <div class="text-left">
+            <h5 class="text-xs font-bold text-white">7 दिन आसान वापसी</h5>
+            <p class="text-[10px] text-stone-400">100% संतुष्टि की गारंटी</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Footer Columns -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 py-12 border-b border-stone-800">
         
-        <!-- About Brand & Contact -->
-        <div class="space-y-4 lg:col-span-3">
+        <!-- Col 1: About Brand & Contact (col-span-4) -->
+        <div class="space-y-4 lg:col-span-4">
           <div class="flex items-center gap-2">
             <span class="text-3xl">🌶️</span>
-            <span class="text-2xl font-bold text-white font-rozha">Jyoti Masala Box</span>
+            <div>
+              <span class="text-2xl font-bold text-white font-rozha block leading-none">Jyoti Masala Box</span>
+              <span class="text-[10px] text-amber-400 font-semibold tracking-wider uppercase">असली मसाले, असली स्वाद</span>
+            </div>
           </div>
           <p class="text-xs text-stone-400 leading-relaxed">
-            ज्योति मसाला बॉक्स भारतीय रसोई को शुद्धता, स्वाद और दादी-नानी के पारंपरिक नुस्खों से महकाने का एक डिजिटल प्रयास है। बिना मिलावट के असली मसालों की खुशबू हर घर तक!
+            ज्योति मसाला बॉक्स भारतीय रसोई को शुद्धता, स्वाद और दादी-नानी के पारंपरिक नुस्खों से महकाने का एक प्रामाणिक डिजिटल प्रयास है। बिना मिलावट के हाथ से कुटे शुद्ध मसाले सीधे आपके दरवाजे तक।
           </p>
           <div class="space-y-2 pt-1 text-xs">
             <div class="flex items-center gap-2">
@@ -426,51 +523,85 @@
             </div>
             <div class="flex items-center gap-2">
               <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
-              <span class="text-stone-400">सुबह 8:00 से रात 10:00 तक</span>
+              <span class="text-stone-300">सुबह 8:00 AM से रात 10:00 PM तक (सोम-रवि)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="award" class="w-4 h-4 text-emerald-400"></i>
+              <span class="text-stone-300">FSSAI Reg. No: <strong>10022026000123</strong> (Certified Purity)</span>
             </div>
           </div>
           <div class="flex items-center gap-3 pt-2">
-            <a href="https://wa.me/919876543210" target="_blank" class="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-colors" title="व्हाट्सएप पर बात करें">
+            <a href="https://wa.me/919876543210?text=नमस्ते%20ज्योति%20दीदी!%20मुझे%20मसाले%20मंगाने%20हैं।" target="_blank" class="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-colors shadow-sm" title="व्हाट्सएप पर बात करें">
               <i data-lucide="message-circle" class="w-5 h-5"></i>
             </a>
-            <a href="tel:+919876543210" class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-colors" title="कॉल करें">
+            <a href="tel:+919876543210" class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-colors shadow-sm" title="कॉल करें">
               <i data-lucide="phone" class="w-5 h-5"></i>
             </a>
+            <button onclick="window.app.openQrPaymentModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-400 border border-amber-500/40 text-xs font-bold transition-colors" title="UPI क्यूआर कोड देखें">
+              <i data-lucide="qr-code" class="w-4 h-4"></i>
+              <span>UPI स्कैन & पे</span>
+            </button>
           </div>
         </div>
 
-        <!-- Quick Links -->
-        <div class="lg:col-span-2">
-          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-amber-500 pl-2">वेबसाइट नेविगेशन</h4>
-          <ul class="space-y-2 text-xs">
-            <li><button onclick="window.app.switchTab('dashboard')" class="hover:text-amber-400 transition-colors">📊 डैशबोर्ड (Dashboard)</button></li>
-            <li><button onclick="window.app.switchTab('tips')" class="hover:text-amber-400 transition-colors">💡 घरेलू कुकिंग टिप्स</button></li>
-            <li><button onclick="window.app.switchTab('masalas')" class="hover:text-amber-400 transition-colors">🌿 मसाले बनाने की विधि</button></li>
-            <li><button onclick="window.app.switchTab('recipes')" class="hover:text-amber-400 transition-colors">🍲 स्वादिष्ट रेसिपीज़</button></li>
-            <li><button onclick="window.app.switchTab('favorites')" class="hover:text-amber-400 transition-colors">❤️ पसंदीदा सूची</button></li>
-            <li><button onclick="window.app.switchTab('contact')" class="hover:text-amber-400 transition-colors">📞 संपर्क व सहायता</button></li>
-          </ul>
-        </div>
-
-        <!-- Popular Kitchen Hacks -->
+        <!-- Col 2: Online Store Catalog (col-span-3) -->
         <div class="lg:col-span-3">
-          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-red-500 pl-2">इमरजेंसी किचन हैक्स</h4>
+          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-red-500 pl-2">ऑनलाइन मसाला स्टोर</h4>
           <ul class="space-y-2 text-xs">
-            <li><button onclick="window.app.openTipModal('tip-oil-excess')" class="hover:text-amber-400 text-left">सब्जी में ज्यादा तेल गिर जाए तो?</button></li>
-            <li><button onclick="window.app.openTipModal('tip-dal-burnt')" class="hover:text-amber-400 text-left">दाल जल जाए तो गंध कैसे हटाएं?</button></li>
-            <li><button onclick="window.app.openTipModal('tip-jalebi-crispy')" class="hover:text-amber-400 text-left">जलेबी एकदम कुरकुरी कैसे बनाएं?</button></li>
-            <li><button onclick="window.app.openTipModal('tip-khaman-spongy')" class="hover:text-amber-400 text-left">खमन ढोकला स्पंजी कैसे बनाएं?</button></li>
-            <li><button onclick="window.app.openTipModal('tip-salt-excess')" class="hover:text-amber-400 text-left">सब्जी में नमक ज्यादा हो जाए तो?</button></li>
+            <li><button onclick="window.app.switchTab('shop')" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>🛒</span> <span>सभी उपलब्ध मसाले (Store)</span></button></li>
+            <li><button onclick="window.app.switchTab('shop'); window.app.setShopFilter('special_blend');" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>🥣</span> <span>स्पेशल ढाबा दाल तड़का मसाला</span></button></li>
+            <li><button onclick="window.app.switchTab('shop'); window.app.setShopFilter('non_veg');" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>🍗</span> <span>शाही चिकन व मटन मसाला</span></button></li>
+            <li><button onclick="window.app.switchTab('shop'); window.app.setShopFilter('special_blend');" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>👑</span> <span>दादी-नानी का असली गरम मसाला</span></button></li>
+            <li><button onclick="window.app.switchTab('shop'); window.app.setShopFilter('daily_spice');" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>🌿</span> <span>हाथरस शुद्ध हींग व कश्मीरी मिर्च</span></button></li>
+            <li><button onclick="window.app.switchTab('shop'); window.app.setShopFilter('combo');" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1.5"><span>🎁</span> <span>5-इन-1 मास्टर किचन गिफ्ट कॉम्बो</span></button></li>
           </ul>
         </div>
 
-        <!-- Customizable UPI Payment QR Code Card -->
-        <div id="footer-qr-container" class="lg:col-span-4 w-full">
-          <!-- Populated dynamically by app.js updateGlobalHeaderAndFooter() -->
+        <!-- Col 3: Customer Care & Policies (col-span-2) -->
+        <div class="lg:col-span-2">
+          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-amber-500 pl-2">ग्राहक सेवा व नीतियां</h4>
+          <ul class="space-y-2 text-xs">
+            <li><button onclick="window.app.openMyOrdersModal()" class="hover:text-amber-400 transition-colors text-left flex items-center gap-1"><span>📦</span> <span>अपने ऑर्डर ट्रैक करें</span></button></li>
+            <li><button onclick="window.app.openPolicyModal('shipping')" class="hover:text-amber-400 transition-colors text-left">🚚 शिपिंग व डिलीवरी नीति</button></li>
+            <li><button onclick="window.app.openPolicyModal('return')" class="hover:text-amber-400 transition-colors text-left">🔄 7 दिन वापसी व रिफंड</button></li>
+            <li><button onclick="window.app.openPolicyModal('purity')" class="hover:text-amber-400 transition-colors text-left">🌿 100% शुद्धता गारंटी</button></li>
+            <li><button onclick="window.app.switchTab('tips')" class="hover:text-amber-400 transition-colors text-left">💡 किचन इमरजेंसी हैक्स</button></li>
+            <li><button onclick="window.app.switchTab('contact')" class="hover:text-amber-400 transition-colors text-left">📞 सहायता व संपर्क</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: 100% Secure Payment & Guarantees (col-span-3) -->
+        <div class="lg:col-span-3">
+          <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4 border-l-2 border-emerald-500 pl-2">100% सुरक्षित भुगतान</h4>
+          <p class="text-xs text-stone-400 mb-3">हम सभी प्रमुख डिजिटल व कैश भुगतान माध्यम स्वीकार करते हैं:</p>
+          
+          <div class="grid grid-cols-3 gap-2 text-[10px] font-bold text-stone-200 mb-4">
+            <div class="bg-stone-800 p-2 rounded-xl border border-stone-700 flex flex-col items-center justify-center text-center">
+              <span class="text-emerald-400 text-sm">📱</span>
+              <span>UPI / QR</span>
+            </div>
+            <div class="bg-stone-800 p-2 rounded-xl border border-stone-700 flex flex-col items-center justify-center text-center">
+              <span class="text-amber-400 text-sm">💵</span>
+              <span>कैश ऑन डिलीवरी</span>
+            </div>
+            <div class="bg-stone-800 p-2 rounded-xl border border-stone-700 flex flex-col items-center justify-center text-center">
+              <span class="text-blue-400 text-sm">💳</span>
+              <span>GPay / PhonePe</span>
+            </div>
+          </div>
+
+          <div class="bg-stone-950/70 p-3 rounded-2xl border border-stone-800 space-y-1.5 text-[11px]">
+            <div class="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+              <span>256-Bit SSL एन्क्रिप्टेड सुरक्षित चेकआउट</span>
+            </div>
+            <p class="text-[10px] text-stone-400">आपकी व्यक्तिगत जानकारी व भुगतान पूर्णतः सुरक्षित हैं।</p>
+          </div>
         </div>
 
       </div>
 
+      <!-- Bottom Bar -->
       <div class="pt-8 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p>© 2026 Jyoti Masala Box (ज्योति मसाला बॉक्स). सर्वाधिकार सुरक्षित।</p>
 

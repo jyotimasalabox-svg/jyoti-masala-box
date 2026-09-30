@@ -922,6 +922,326 @@ const QUICK_SOS_HACKS = [
   }
 ];
 
+const PRODUCTS_DATA = [
+  {
+    id: "prod-dal-masala",
+    linkedMasalaId: "masala-dal",
+    name: "स्पेशल ढाबा दाल तड़का मसाला",
+    englishName: "Dhaba Dal Tadka & Fry Special Masala",
+    tagline: "सादी दाल को ढाबे जैसी खुशबूदार और लजीज बना दे!",
+    category: "special_blend",
+    categoryLabel: "स्पेशल ब्लेंड्स",
+    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+    rating: 4.9,
+    reviewsCount: 342,
+    badge: "बेस्टसेलर",
+    badgeColor: "bg-red-600",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "तुअर, चना और मूंग दाल तड़का के लिए हाथ से भुना और कुटा हुआ असली मसाला। सौंफ, अमचूर, कश्मीरी मिर्च और हींग का जादुई स्वाद।",
+    features: ["100% शुद्ध सामग्री", "कोई कृत्रिम रंग या प्रिजर्वेटिव नहीं", "धीमी आंच पर भुना हुआ", "ढाबा स्टाइल असली स्वाद"],
+    variants: [
+      { weight: "100g", price: 120, mrp: 160, discount: "25% OFF" },
+      { weight: "250g", price: 270, mrp: 360, discount: "25% OFF" },
+      { weight: "500g", price: 499, mrp: 680, discount: "26% OFF" }
+    ]
+  },
+  {
+    id: "prod-chicken-masala",
+    linkedMasalaId: "masala-chicken",
+    name: "शाही चिकन मसाला (ढाबा स्टाइल)",
+    englishName: "Royal Dhaba Style Chicken Curry Masala",
+    tagline: "रेस्टोरेंट जैसी गाढ़ी ग्रेवी और मनमोहक खुशबू का असली राज!",
+    category: "non_veg",
+    categoryLabel: "नॉन-वेज स्पेशल",
+    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80",
+    rating: 5.0,
+    reviewsCount: 512,
+    badge: "सर्वाधिक लोकप्रिय",
+    badgeColor: "bg-amber-600",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "जावित्री, चक्रफूल, बड़ी इलायची और कश्मीरी लाल मिर्च से तैयार किया गया खास ब्लेंड जो चिकन को अंदर तक रसीला और महकदार बनाता है।",
+    features: ["18 दुर्लभ खड़े मसालों का मिश्रण", "धीमी आंच पर रोस्टेड", "रेस्टोरेंट जैसी ग्रेवी", "100% प्राकृतिक"],
+    variants: [
+      { weight: "100g", price: 140, mrp: 180, discount: "22% OFF" },
+      { weight: "250g", price: 320, mrp: 420, discount: "24% OFF" },
+      { weight: "500g", price: 599, mrp: 799, discount: "25% OFF" }
+    ]
+  },
+  {
+    id: "prod-mutton-masala",
+    linkedMasalaId: "masala-mutton",
+    name: "रॉयल मटन कोरमा व रोगन जोश मसाला",
+    englishName: "Royal Mutton Korma & Rogan Josh Masala",
+    tagline: "मक्खन जैसा मटन और गहरा रोगन लाने वाला शाही फॉर्मूला!",
+    category: "non_veg",
+    categoryLabel: "नॉन-वेज स्पेशल",
+    image: "https://images.unsplash.com/photo-1545247181-516773cae754?auto=format&fit=crop&w=800&q=80",
+    rating: 4.9,
+    reviewsCount: 289,
+    badge: "रॉयल रेसिपी",
+    badgeColor: "bg-stone-800",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "दगड़ फूल, कबाब चीनी, शाही जीरा, रतनजोत और बड़ी इलायची का नवाबी संगम जो मटन कोरमा में शाही रंग और स्वाद लाता है।",
+    features: ["प्राकृतिक रतनजोत का लाल रोगन", "पत्थर के फूल की खास महक", "मटन को गलाने में मददगार", "होटल व बावर्ची स्टाइल"],
+    variants: [
+      { weight: "100g", price: 160, mrp: 210, discount: "24% OFF" },
+      { weight: "250g", price: 360, mrp: 480, discount: "25% OFF" },
+      { weight: "500g", price: 680, mrp: 900, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-garam-masala",
+    linkedMasalaId: "masala-garam",
+    name: "दादी-नानी का असली गरम मसाला",
+    englishName: "Grandmother's Authentic Shahi Garam Masala",
+    tagline: "हर सादी सब्जी और पुलाव में खुशबू का जादू भर दे!",
+    category: "special_blend",
+    categoryLabel: "स्पेशल ब्लेंड्स",
+    image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&q=80",
+    rating: 5.0,
+    reviewsCount: 680,
+    badge: "टॉप रेटेड",
+    badgeColor: "bg-emerald-600",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "21 शुद्ध खड़े मसालों का पारंपरिक अनुपात। थोड़ी सी चुटकी भर डालने से ही पूरी रसोई सुगंध से भर जाती है।",
+    features: ["21 साबुत खड़े मसाले", "पारंपरिक सिलबट्टा कुटाई तकनीक", "कोई मिलावट या लकड़ी का बुरादा नहीं", "अत्यधिक तेज व शुद्ध"],
+    variants: [
+      { weight: "100g", price: 150, mrp: 195, discount: "23% OFF" },
+      { weight: "250g", price: 340, mrp: 450, discount: "24% OFF" },
+      { weight: "500g", price: 630, mrp: 850, discount: "26% OFF" }
+    ]
+  },
+  {
+    id: "prod-chaat-masala",
+    linkedMasalaId: "masala-chaat",
+    name: "चटपटा स्ट्रीट स्टाइल चाट मसाला",
+    englishName: "Street Style Tangy Zing Chaat Masala",
+    tagline: "दही भल्ले, फ्रूट चाट, रायता और सलाद में लाजवाब स्वाद!",
+    category: "tea_chaat",
+    categoryLabel: "चाय व चाट",
+    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80",
+    rating: 4.8,
+    reviewsCount: 198,
+    badge: "चटपटा स्वाद",
+    badgeColor: "bg-amber-500",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "काला नमक, सेंधा नमक, भुना जीरा, अमचूर, अनारदाना और नौसादर का संतुलित चटपटा स्वाद जो चाट को ठेले जैसा स्वादिष्ट बना दे।",
+    features: ["असली अनारदाना व अमचूर", "हाजमे के लिए उत्तम", "सेंधा व काला नमक युक्त", "तीखा व खट्टा स्वाद"],
+    variants: [
+      { weight: "100g", price: 95, mrp: 125, discount: "24% OFF" },
+      { weight: "250g", price: 210, mrp: 280, discount: "25% OFF" },
+      { weight: "500g", price: 390, mrp: 520, discount: "25% OFF" }
+    ]
+  },
+  {
+    id: "prod-chai-masala",
+    linkedMasalaId: "masala-chai",
+    name: "रॉयल कड़क मसाला चाय ब्लेंड",
+    englishName: "Royal Kadak Aromatic Tea Masala",
+    tagline: "हर घूंट में ताजगी, खुशबू और रोग प्रतिरोधक क्षमता!",
+    category: "tea_chaat",
+    categoryLabel: "चाय व चाट",
+    image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
+    rating: 4.9,
+    reviewsCount: 420,
+    badge: "सर्दियों का खास",
+    badgeColor: "bg-red-700",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "हरी इलायची, सोंठ, दालचीनी, लौंग, मुलेठी और जायफल का अमृत तुल्य ब्लेंड। सिर्फ 1 चुटकी साधारण चाय को अमृत बना दे।",
+    features: ["मुलेठी व सोंठ युक्त", "गले की खराश व जुकाम में राहत", "1 चुटकी में भरपूर महक", "100% शुद्ध औषधीय मसाले"],
+    variants: [
+      { weight: "100g", price: 130, mrp: 170, discount: "23% OFF" },
+      { weight: "250g", price: 295, mrp: 390, discount: "24% OFF" },
+      { weight: "500g", price: 550, mrp: 720, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-hing",
+    linkedMasalaId: null,
+    name: "हाथरस असली शाही दानेदार हींग",
+    englishName: "Pure Hathras Shahi Compounded Asafoetida (Hing)",
+    tagline: "सिर्फ एक राई के दाने जितनी हींग पूरे खाने को महका दे!",
+    category: "daily_spice",
+    categoryLabel: "खड़े व शुद्ध मसाले",
+    image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&q=80",
+    rating: 5.0,
+    reviewsCount: 310,
+    badge: "100% शुद्ध हींग",
+    badgeColor: "bg-red-800",
+    inStock: true,
+    shelfLife: "24 महीने",
+    description: "हाथरस की विश्व-प्रसिद्ध शुद्ध दानेदार हींग। बाजार की मिलावटी हींग के मुकाबले 10 गुना ज्यादा खुशबूदार और पाचन के लिए गुणकारी।",
+    features: ["हाथरस की मूल उत्पादकता", "गोंद रहित शुद्ध अर्क", "सिर्फ एक चुटकी काफी", "पाचन शक्ति वर्धक"],
+    variants: [
+      { weight: "50g", price: 199, mrp: 260, discount: "23% OFF" },
+      { weight: "100g", price: 370, mrp: 490, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-kashmiri-mirch",
+    linkedMasalaId: null,
+    name: "कश्मीरी लाल मिर्च पाउडर (डंठल रहित)",
+    englishName: "Pure Stemless Kashmiri Red Chili Powder",
+    tagline: "गहरा लाल प्राकृतिक रंग और बिना तीखेपन की हल्की गर्माहट!",
+    category: "daily_spice",
+    categoryLabel: "खड़े व शुद्ध मसाले",
+    image: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=800&q=80",
+    rating: 4.9,
+    reviewsCount: 265,
+    badge: "नेचुरल रोगन",
+    badgeColor: "bg-red-600",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "कश्मीर की चुनिंदा मिर्चियों के डंठल और बीज अलग करके पीसा गया शुद्ध पाउडर। बिना किसी कृत्रिम रंग के आपकी सब्जी में मनमोहक लाल रंग लाए।",
+    features: ["0% कृत्रिम रंग या ईंट का चूरा", "डंठल व बीज रहित पिसाई", "नेचुरल गहरा लाल रंग", "हल्का संतुलित तीखापन"],
+    variants: [
+      { weight: "200g", price: 165, mrp: 220, discount: "25% OFF" },
+      { weight: "500g", price: 380, mrp: 500, discount: "24% OFF" },
+      { weight: "1kg", price: 720, mrp: 950, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-haldi",
+    linkedMasalaId: null,
+    name: "लकाडोंग उच्च-करक्यूमिन शुद्ध हल्दी पाउडर",
+    englishName: "Lakadong Pure High-Curcumin Turmeric (7.5%+)",
+    tagline: "मेघालय की लकाडोंग हल्दी - 3 गुना ज्यादा गुणकारी व पीली!",
+    category: "daily_spice",
+    categoryLabel: "खड़े व शुद्ध मसाले",
+    image: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&q=80",
+    rating: 5.0,
+    reviewsCount: 380,
+    badge: "7.5%+ करक्यूमिन",
+    badgeColor: "bg-amber-600",
+    inStock: true,
+    shelfLife: "18 महीने",
+    description: "विश्व की सर्वश्रेष्ठ मानी जाने वाली मेघालय के लकाडोंग की हल्दी। इसमें 7.5% से अधिक करक्यूमिन होता है जो शरीर की इम्युनिटी और स्वास्थ्य में रामबाण है।",
+    features: ["उच्चतम करक्यूमिन मात्रा", "चटक पीला प्राकृतिक रंग", "दूध में पीने के लिए सर्वोत्तम", "लैब टेस्टेड शुद्धता"],
+    variants: [
+      { weight: "200g", price: 145, mrp: 190, discount: "24% OFF" },
+      { weight: "500g", price: 330, mrp: 440, discount: "25% OFF" },
+      { weight: "1kg", price: 620, mrp: 820, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-kasuri-methi",
+    linkedMasalaId: null,
+    name: "नागौरी खुशबूदार कसूरी मेथी",
+    englishName: "Hand-Picked Nagauri Aromatic Kasuri Methi",
+    tagline: "नागौर के खेतों से सीधी ताज़ा चुनी और छांव में सुखाई गई मेथी!",
+    category: "daily_spice",
+    categoryLabel: "खड़े व शुद्ध मसाले",
+    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+    rating: 4.8,
+    reviewsCount: 175,
+    badge: "छाया-शुष्क नागौरी",
+    badgeColor: "bg-emerald-700",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "राजस्थान के नागौर की प्रसिद्ध कसूरी मेथी। हाथों से क्रश करके पनीर, दाल मखनी या पराठे में डालें, स्वाद और सुगंध दोगुनी हो जाएगी।",
+    features: ["बिना डंठल वाली हरी पत्तियां", "छांव में सुखाई गई प्राकृतिक विधि", "अत्यधिक तेज सौंधी खुशबू", "धूल व मिट्टी मुक्त"],
+    variants: [
+      { weight: "100g", price: 85, mrp: 110, discount: "23% OFF" },
+      { weight: "250g", price: 190, mrp: 250, discount: "24% OFF" }
+    ]
+  },
+  {
+    id: "prod-combo-box",
+    linkedMasalaId: null,
+    name: "5-इन-1 मास्टर किचन मसाला कॉम्बो बॉक्स",
+    englishName: "5-in-1 Master Kitchen Spice Treasure Gift Box",
+    tagline: "दाल, चिकन, गरम, चाट और चाय मसाला - सुंदर रॉयल गिफ्ट बॉक्स में!",
+    category: "combo",
+    categoryLabel: "कॉम्बो पैक्स",
+    image: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?auto=format&fit=crop&w=800&q=80",
+    rating: 5.0,
+    reviewsCount: 640,
+    badge: "महा बचत कॉम्बो (Free Gift)",
+    badgeColor: "bg-red-700",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "घर के लिए या उपहार देने के लिए संपूर्ण मसाला संदूक! इसमें 5 प्रमुख मसाले (प्रत्येक 100g) सुंदर एयरटाइट मेटल जार और गिफ्ट पैकेजिंग में आते हैं। साथ में मुफ़्त चम्मच सेट!",
+    features: ["5 प्रमुख मसालों का सेट (500g)", "प्रीमियम गिफ्ट बॉक्स पैकिंग", "मुफ़्त होम डिलीवरी", "₹200 की सीधी बचत"],
+    variants: [
+      { weight: "5 x 100g जार (कुल 500g)", price: 599, mrp: 799, discount: "25% OFF" }
+    ]
+  },
+  {
+    id: "prod-biryani-masala",
+    linkedMasalaId: null,
+    name: "शाही दम बिरयानी व पुलाव स्पेशल मसाला",
+    englishName: "Royal Awadhi Dum Biryani & Pulao Masala",
+    tagline: "हर दाने में लखनवी खुशबू और लजीज स्वाद की गारंटी!",
+    category: "special_blend",
+    categoryLabel: "स्पेशल ब्लेंड्स",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    rating: 4.9,
+    reviewsCount: 220,
+    badge: "दम बिरयानी स्पेशल",
+    badgeColor: "bg-amber-600",
+    inStock: true,
+    shelfLife: "12 महीने",
+    description: "केसरिया जावित्री, हरी इलायची, शाही जीरा, दालचीनी और चक्रफूल का अवधी संगम जो वेज पुलाव, चिकन बिरयानी और मटन बिरयानी को शाही बना देता है।",
+    features: ["असली अवधी बावर्ची रेसिपी", "चावल के हर दाने में खुशबू", "वेज व नॉन-वेज दोनों के लिए", "ताज़ा हाथ से तैयार"],
+    variants: [
+      { weight: "100g", price: 155, mrp: 200, discount: "22% OFF" },
+      { weight: "250g", price: 350, mrp: 460, discount: "24% OFF" },
+      { weight: "500g", price: 650, mrp: 860, discount: "24% OFF" }
+    ]
+  }
+];
+
+const COUPONS_DATA = [
+  { code: "JYOTI10", discountPercent: 10, minOrder: 0, description: "10% की अतिरिक्त छूट (सभी ऑर्डर्स पर)" },
+  { code: "SHUDDH50", flatDiscount: 50, minOrder: 399, description: "₹50 की फ्लैट छूट (₹399+ के ऑर्डर पर)" },
+  { code: "FREESHIP", freeShipping: true, minOrder: 0, description: "मुफ़्त डिलीवरी (बिना किसी न्यूनतम सीमा के)" },
+  { code: "FESTIVE20", discountPercent: 20, minOrder: 899, description: "20% की महा छूट (₹899+ के ऑर्डर पर)" }
+];
+
+const TESTIMONIALS_DATA = [
+  { name: "सुनीता शर्मा", city: "जयपुर, राजस्थान", rating: 5, date: "2 दिन पहले", review: "ढाबा दाल मसाला और गरम मसाला का स्वाद लाजवाब है! दाल बनाते ही पूरे घर में ढाबे जैसी खुशबू फैल जाती है। पैकिंग भी एयरटाइट और बहुत सुरक्षित थी।", product: "स्पेशल ढाबा दाल मसाला" },
+  { name: "राजेश वर्मा", city: "लखनऊ, उत्तर प्रदेश", rating: 5, date: "5 दिन पहले", review: "शाही चिकन मसाला इस्तेमाल किया, बिल्कुल पुरानी दिल्ली और अवधी स्टाइल स्वाद आया। बिना मिलावट के असली मसालों का स्वाद है।", product: "शाही चिकन मसाला" },
+  { name: "मीनाक्षी पाटिल", city: "पुणे, महाराष्ट्र", rating: 5, date: "1 हफ़्ते पहले", review: "हाथरस की हींग और कड़क चाय मसाला वाकई में 100% शुद्ध है। 3 दिन में डिलीवरी मिल गई और कैश ऑन डिलीवरी की सुविधा बहुत सुविधाजनक है।", product: "हाथरस शाही हींग" },
+  { name: "अमित सिंघल", city: "नई दिल्ली", rating: 5, date: "2 हफ़्ते पहले", review: "5-in-1 कॉम्बो बॉक्स मंगाया था। इतनी अच्छी क्वालिटी और खुशबू वाले मसाले आज के समय बाजार में मिलना नामुमकिन है। ज्योति दीदी को दिल से धन्यवाद!", product: "5-in-1 मास्टर मसाला बॉक्स" }
+];
+
+const POLICIES_DATA = {
+  shipping: {
+    title: "🚚 शिपिंग व डिलीवरी नीति (Shipping & Delivery)",
+    points: [
+      "सभी ऑर्डर्स 24 घंटे के भीतर ताज़ा पैक करके सुरक्षित डिस्पैच किए जाते हैं।",
+      "₹499 या उससे अधिक के सभी ऑर्डर्स पर संपूर्ण भारत में **मुफ़्त एक्सप्रेस डिलीवरी** उपलब्ध है।",
+      "₹499 से कम के ऑर्डर्स पर केवल ₹40 का मामूली डिलीवरी शुल्क लिया जाता है।",
+      "मेट्रो शहरों में 2-3 दिन और अन्य सभी शहरों/कस्बों में 3-5 कार्यदिवसों में डिलीवरी मिल जाती है।",
+      "ऑर्डर डिस्पैच होते ही आपको एसएमएस व व्हाट्सएप पर लाइव कूरियर ट्रैकिंग लिंक प्रदान किया जाता है।"
+    ]
+  },
+  return: {
+    title: "🔄 7 दिन आसान वापसी व रिफंड नीति (Returns & Refunds)",
+    points: [
+      "यदि डिलीवरी के समय पार्सल क्षतिग्रस्त (damaged) मिले या सील टूटी हो, तो तुरंत डिलीवरी बॉय को वापस कर सकते हैं।",
+      "मसालों की गुणवत्ता से असंतुष्ट होने पर डिलीवरी के 7 दिनों के भीतर बिना किसी झंझट के रिप्लेसमेंट या 100% रिफंड की सुविधा।",
+      "रिफंड अनुरोध स्वीकृत होने पर 24-48 घंटों के भीतर सीधे आपके मूल बैंक खाते या UPI में राशि ट्रांसफर की जाती है।",
+      "ग्राहक सहायता: +91 98765 43210 या व्हाट्सएप पर तुरंत सहायता उपलब्ध है।"
+    ]
+  },
+  purity: {
+    title: "🌿 100% शुद्धता व FSSAI प्रमाणन गारंटी",
+    points: [
+      "हमारे सभी मसाले बिना किसी मिलावट, कृत्रिम रंग (Synthetic Colors) या कृत्रिम सुगंध (Artificial Fragrance) के तैयार किए जाते हैं।",
+      "मसालों को भारी तले की कड़ाही में धीमी आंच पर भूनकर पारंपरिक तरीके से पीसा जाता है ताकि आवश्यक तेल (Essential Oils) सुरक्षित रहें।",
+      "FSSAI प्रमाणित स्वच्छ निर्माण इकाई में उच्च स्वच्छता मानकों के साथ पैकिंग।",
+      "हर बैच की प्रयोगशाला में जांच की जाती है।"
+    ]
+  }
+};
+
 const BOT_KNOWLEDGE_BASE = [
   {
     keywords: ["namak", "salt", "नमक", "khara", "namak jyada"],
