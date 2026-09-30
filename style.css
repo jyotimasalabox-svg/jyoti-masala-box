@@ -81,23 +81,51 @@ body[data-theme="darbar"] .text-gray-600 {
   white-space: nowrap;
 }
 
-.ganesh-mini-shrine {
+.ganesh-3d-icon-badge {
   width: 52px;
-  height: 64px;
+  height: 52px;
   position: relative;
-  border-radius: 1rem;
-  background: linear-gradient(180deg, #FFFBEB 0%, #FFEDD5 100%);
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 30%, #FFFDF5 0%, #FEF3C7 100%);
   border: 2px solid #F59E0B;
-  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 3px 2px;
+  box-shadow: 0 4px 12px -2px rgba(217, 119, 6, 0.32), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
   margin: auto 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  user-select: none;
+}
+
+@media (min-width: 640px) {
+  .ganesh-3d-icon-badge {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+}
+
+.ganesh-3d-icon-badge:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 18px -2px rgba(217, 119, 6, 0.45), 0 0 14px rgba(245, 158, 11, 0.4);
+}
+
+.ganesh-3d-icon-badge .ganesh-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.ganesh-3d-icon-badge canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
 }
 
 body {

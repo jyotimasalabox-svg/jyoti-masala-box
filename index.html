@@ -60,20 +60,16 @@
         <!-- Left: Cute Small Ganesha Murti + Brand Title & Tagline -->
         <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0 min-w-0">
           
-          <!-- Small Ganesha Shrine with Flower Rain STRICTLY inside this frame -->
-          <div class="ganesh-mini-shrine" title="श्री गणेश जी महाराज - फूलों की वर्षा" onclick="window.app.showerExtraPetals()">
-            <!-- Dedicated Flower Rain Canvas (EXCLUSIVELY OVER GANESHA MURTI) -->
-            <canvas id="ganesh-murti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-20"></canvas>
-
-            <!-- Small Ganesh Ji Idol (Murti) -->
-            <div class="w-10 h-11 relative z-10 flex items-center justify-center mt-0.5">
-              <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=300&q=80" alt="श्री गणेश जी मूर्ति" class="w-full h-full object-cover rounded-lg shadow-2xs border border-amber-300/80" />
-            </div>
-
-            <!-- Sacred Inscription Under Murti -->
-            <span class="text-[7.5px] font-extrabold text-amber-950 font-rozha tracking-tight leading-none z-10 pb-0.5 whitespace-nowrap">
-              ॥ श्री गणेश ॥
-            </span>
+          <!-- Clean 3D Ganesh Ji Idol Icon with EXCLUSIVE Rose Petals Rain -->
+          <div class="ganesh-3d-icon-badge" title="भगवान श्री गणेश जी - गुलाब के फूलों की वर्षा (क्लिक करें)" onclick="window.app.showerExtraPetals()">
+            <!-- Clean 3D Ganesh Ji Idol Image -->
+            <img src="ganesh-3d.jpg" alt="श्री गणेश जी 3D मूर्ति" class="ganesh-3d-img" />
+            
+            <!-- Dedicated Rose Flower Rain Canvas (EXCLUSIVELY OVER GANESH ICON) -->
+            <canvas id="ganesh-murti-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+            
+            <!-- Subtle Divine Gold Edge Ring -->
+            <div class="absolute inset-0 rounded-[14px] sm:rounded-[16px] ring-1 ring-inset ring-amber-400/50 pointer-events-none z-20"></div>
           </div>
 
           <!-- Brand Logo & Tagline -->

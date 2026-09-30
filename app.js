@@ -3151,25 +3151,31 @@
     renderRecipes();
   }
 
-  // --- FLOWER SHOWER EXCLUSIVELY ON LORD GANESHA MURTI (सिर्फ गणेश जी की मूर्ति पर फूलों की वर्षा) ---
+  // --- ROSE FLOWER SHOWER EXCLUSIVELY ON LORD GANESHA 3D ICON (सिर्फ गणेश जी के 3D आइकन पर गुलाब के फूलों की वर्षा) ---
   function initGaneshMurtiFlowerRain() {
     const canvas = document.getElementById("ganesh-murti-canvas");
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    let width = 64;
-    let height = 80;
+    let width = 56;
+    let height = 56;
 
     function resize() {
       if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.offsetWidth || 64;
-      height = canvas.height = canvas.parentElement.offsetHeight || 80;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width || 56;
+      height = rect.height || 56;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
     }
     resize();
     window.addEventListener("resize", resize);
 
     const petals = [];
-    const maxPetals = 22; // Delicate, beautiful density strictly on the murti
+    const maxPetals = 20; // Perfect, elegant density strictly on the Ganesh icon
 
     class Petal3D {
       constructor(isBurst = false) {
@@ -3178,31 +3184,32 @@
 
       reset(isBurst = false) {
         this.x = Math.random() * width;
-        this.y = isBurst ? Math.random() * 12 : -6 - Math.random() * 15;
-        this.z = Math.random() * 0.6 + 0.5;
-        this.size = (Math.random() * 2.5 + 4) * this.z; // 4px to 6.5px (perfect scale for small murti!)
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() * 0.6 + 0.7) * this.z; // gentle descent
+        this.y = isBurst ? Math.random() * 8 : -4 - Math.random() * 12;
+        this.z = Math.random() * 0.5 + 0.6;
+        this.size = (Math.random() * 2.2 + 4.2) * this.z; // 4.5px to 7.5px
+        this.vx = (Math.random() - 0.5) * 0.35;
+        this.vy = (Math.random() * 0.55 + 0.65) * this.z; // gentle graceful descent
         this.pitch = Math.random() * Math.PI;
         this.roll = Math.random() * Math.PI;
         this.yaw = Math.random() * Math.PI;
-        this.pitchSpeed = (Math.random() - 0.5) * 0.05;
-        this.rollSpeed = (Math.random() - 0.5) * 0.06;
-        this.yawSpeed = (Math.random() - 0.5) * 0.04;
-        this.opacity = Math.random() * 0.25 + 0.75;
+        this.pitchSpeed = (Math.random() - 0.5) * 0.045;
+        this.rollSpeed = (Math.random() - 0.5) * 0.055;
+        this.yawSpeed = (Math.random() - 0.5) * 0.035;
+        this.opacity = Math.random() * 0.2 + 0.8;
 
-        // Fresh Rose red & Genda (Marigold) golden petals
-        const colors = [
-          { outer: "#E11D48", inner: "#9F1239" },
-          { outer: "#F43F5E", inner: "#BE123C" },
-          { outer: "#FB7185", inner: "#E11D48" },
-          { outer: "#F59E0B", inner: "#D97706" }
+        // Pure Velvet Indian Red Rose (गुलाब) Petal Palette
+        const roseTones = [
+          { outer: "#E11D48", inner: "#9F1239", deep: "#881337" }, // Classic Red Rose
+          { outer: "#F43F5E", inner: "#BE123C", deep: "#9F1239" }, // Fresh Blooming Rose
+          { outer: "#FB7185", inner: "#E11D48", deep: "#BE123C" }, // Tender Rose Pink Tip
+          { outer: "#BE123C", inner: "#881337", deep: "#4C0519" }, // Deep Maroon Velvet Rose
+          { outer: "#FF4D6D", inner: "#C9184A", deep: "#800F2F" }  // Vibrant Auspicious Rose
         ];
-        this.colorPair = colors[Math.floor(Math.random() * colors.length)];
+        this.colors = roseTones[Math.floor(Math.random() * roseTones.length)];
       }
 
       update() {
-        this.x += this.vx + Math.sin(this.roll) * 0.3;
+        this.x += this.vx + Math.sin(this.roll) * 0.28;
         this.y += this.vy;
         this.pitch += this.pitchSpeed;
         this.roll += this.rollSpeed;
@@ -3219,22 +3226,32 @@
         ctx.rotate(this.yaw);
 
         const scaleX = Math.cos(this.roll);
-        const scaleY = Math.sin(this.pitch) * 0.9;
+        const scaleY = Math.sin(this.pitch) * 0.95;
         ctx.scale(Math.abs(scaleX) < 0.15 ? 0.15 : scaleX, Math.abs(scaleY) < 0.15 ? 0.15 : scaleY);
 
+        // Curvature of natural 3D rose petal
         ctx.beginPath();
-        ctx.moveTo(0, -this.size);
-        ctx.bezierCurveTo(this.size * 0.9, -this.size * 0.8, this.size * 0.95, this.size * 0.5, 0, this.size);
-        ctx.bezierCurveTo(-this.size * 0.95, this.size * 0.5, -this.size * 0.9, -this.size * 0.8, 0, -this.size);
+        ctx.moveTo(0, -this.size * 0.9);
+        ctx.bezierCurveTo(this.size * 0.95, -this.size * 0.8, this.size * 1.05, this.size * 0.6, 0, this.size);
+        ctx.bezierCurveTo(-this.size * 1.05, this.size * 0.6, -this.size * 0.95, -this.size * 0.8, 0, -this.size * 0.9);
         ctx.closePath();
 
-        const grad = ctx.createRadialGradient(0, 0, 0.5, 0, 0, this.size);
-        grad.addColorStop(0, this.colorPair.outer);
-        grad.addColorStop(1, this.colorPair.inner);
+        const grad = ctx.createRadialGradient(0, -this.size * 0.2, 0.5, 0, 0, this.size);
+        grad.addColorStop(0, this.colors.outer);
+        grad.addColorStop(0.7, this.colors.inner);
+        grad.addColorStop(1, this.colors.deep);
 
         ctx.fillStyle = grad;
         ctx.globalAlpha = this.opacity;
         ctx.fill();
+
+        // Delicate 3D Petal Spine Highlight
+        ctx.beginPath();
+        ctx.moveTo(0, -this.size * 0.65);
+        ctx.quadraticCurveTo(this.size * 0.1, 0, 0, this.size * 0.65);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
 
         ctx.restore();
       }
@@ -3259,11 +3276,11 @@
     requestAnimationFrame(renderLoop);
 
     window.app.showerExtraPetals = function () {
-      showToast("🌸 भगवान श्री गणेश जी पर ताज़ा पुष्प वर्षा! 🌸");
+      showToast("🌸 भगवान श्री गणेश जी पर ताज़ा गुलाब पुष्प वर्षा! 🌸");
       for (let i = 0; i < 20; i++) {
         const burstPetal = new Petal3D(true);
         burstPetal.y = Math.random() * 6;
-        burstPetal.vy = Math.random() * 1.4 + 0.9;
+        burstPetal.vy = Math.random() * 1.2 + 0.8;
         petals.push(burstPetal);
         if (petals.length > 40) petals.shift();
       }
