@@ -462,6 +462,27 @@
     if (modal) modal.classList.add("hidden");
   }
 
+  function updateAdminVisibility() {
+    const isAuth = state.isAdminLoggedIn === true;
+    
+    // Toggle all admin-only controls across DOM
+    document.querySelectorAll(".admin-only-control").forEach(el => {
+      if (isAuth) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    });
+
+    // Toggle footer login / logout buttons
+    const loginBtn = document.getElementById("footer-admin-login-btn");
+    const logoutBox = document.getElementById("footer-admin-logout-btn");
+    if (loginBtn) loginBtn.classList.toggle("hidden", isAuth);
+    if (logoutBox) logoutBox.classList.toggle("hidden", !isAuth);
+
+    lucide.createIcons();
+  }
+
   function handleAdminLogin(e) {
     e.preventDefault();
     const userInput = (document.getElementById("admin-login-username").value || "").trim();
@@ -475,6 +496,7 @@
       sessionStorage.setItem("jyoti_admin_auth", "true");
       closeAdminLoginModal();
       showToast("एडमिन लॉगिन सफल! आपका स्वागत है। 🔓");
+      updateAdminVisibility();
       switchTab("admin");
       renderDashboard();
     } else {
@@ -489,6 +511,7 @@
     state.isAdminLoggedIn = false;
     sessionStorage.removeItem("jyoti_admin_auth");
     showToast("एडमिन लॉगआउट हो गया। 🔒");
+    updateAdminVisibility();
     switchTab("dashboard");
     renderDashboard();
   }
@@ -560,10 +583,12 @@
                 <span>किचन हैक्स देखें</span>
               </button>
 
-              <button onclick="window.app.switchTab('admin')" class="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 px-4 py-3 rounded-xl font-bold text-xs shadow-sm transition-all">
-                <i data-lucide="settings" class="w-4 h-4 text-amber-700"></i>
-                <span>⚙️ कस्टमाइज़ डैशबोर्ड</span>
-              </button>
+              ${state.isAdminLoggedIn ? `
+                <button onclick="window.app.switchTab('admin')" class="inline-flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 px-4 py-3 rounded-xl font-bold text-xs shadow-sm transition-all">
+                  <i data-lucide="settings" class="w-4 h-4 text-amber-700"></i>
+                  <span>⚙️ कस्टमाइज़ डैशबोर्ड</span>
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -591,7 +616,8 @@
         </div>
       </section>
 
-      <!-- Quick Customizer Bar for instant access -->
+      <!-- Quick Customizer Bar (Only for logged-in Admin) -->
+      ${state.isAdminLoggedIn ? `
       <section class="mb-12 bg-gradient-to-r from-amber-500 via-red-600 to-amber-600 p-0.5 rounded-3xl shadow-lg">
         <div class="bg-white rounded-[23px] p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">
@@ -627,6 +653,7 @@
           </div>
         </div>
       </section>
+      ` : ''}
 
       <!-- Kitchen SOS Emergency Fast Solver Bar -->
       <section class="mb-12">
@@ -1369,12 +1396,14 @@
             </a>
           </div>
 
+          ${state.isAdminLoggedIn ? `
           <div class="bg-white rounded-2xl border border-amber-200 p-5 shadow-sm text-center">
             <button onclick="window.app.switchTab('admin')" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold py-3 rounded-xl text-xs transition-colors flex items-center justify-center gap-2">
               <i data-lucide="settings" class="w-4 h-4 text-amber-700"></i>
               <span>⚙️ वेबसाइट व फोन नंबर कस्टमाइज़ करें</span>
             </button>
           </div>
+          ` : ''}
         </div>
 
         <div class="lg:col-span-7">
@@ -3301,14 +3330,17 @@
 
   function init() {
     const hash = window.location.hash.replace("#", "");
-    if (["dashboard", "tips", "masalas", "recipes", "favorites", "contact", "admin"].includes(hash)) {
+    if (["dashboard", "tips", "masalas", "recipes", "favorites", "contact"].includes(hash)) {
       switchTab(hash, false);
+    } else if (hash === "admin" && state.isAdminLoggedIn) {
+      switchTab("admin", false);
     } else {
       switchTab("dashboard", false);
     }
 
     updateBookmarkBadge();
     updateGlobalHeaderAndFooter();
+    updateAdminVisibility();
 
     // Load saved theme
     const savedTheme = localStorage.getItem("jyoti_theme") || "saffron";
@@ -3320,10 +3352,33 @@
     const searchInputs = document.querySelectorAll(".universal-search-input");
     searchInputs.forEach(inp => {
       inp.addEventListener("input", handleSearchInput);
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = (inp.value || "").trim().toLowerCase();
+          if (val === "admin" || val === "login" || val === "jyoti") {
+            e.preventDefault();
+            inp.value = "";
+            if (!state.isAdminLoggedIn) {
+              openAdminLoginModal();
+            } else {
+              switchTab("admin");
+            }
+          }
+        }
+      });
     });
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeModal();
+      // Secret Admin Key shortcut: Ctrl + Shift + A or Alt + A
+      if ((e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) || (e.altKey && (e.key === "A" || e.key === "a"))) {
+        e.preventDefault();
+        if (!state.isAdminLoggedIn) {
+          openAdminLoginModal();
+        } else {
+          switchTab("admin");
+        }
+      }
     });
 
     lucide.createIcons();

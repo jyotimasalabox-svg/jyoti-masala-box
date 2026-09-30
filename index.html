@@ -110,7 +110,7 @@
           <button onclick="window.app.switchTab('contact')" data-target="contact" class="nav-link-btn px-2.5 py-1.5 rounded-lg text-xs xl:text-sm font-semibold transition-all whitespace-nowrap">
             📞 संपर्क
           </button>
-          <button onclick="window.app.switchTab('admin')" data-target="admin" class="nav-link-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-sm flex items-center gap-1 border border-amber-300 whitespace-nowrap">
+          <button id="header-admin-btn" onclick="window.app.switchTab('admin')" data-target="admin" class="admin-only-control hidden nav-link-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-sm flex items-center gap-1 border border-amber-300 whitespace-nowrap">
             <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
             <span>कस्टमाइज़</span>
           </button>
@@ -198,7 +198,7 @@
           <i data-lucide="phone-call" class="w-5 h-5 text-emerald-600"></i>
           <span>संपर्क व सहायता</span>
         </button>
-        <button onclick="window.app.switchTab('admin')" data-target="admin" class="mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 bg-amber-50 text-amber-900 border border-amber-300">
+        <button id="mobile-menu-admin-btn" onclick="window.app.switchTab('admin')" data-target="admin" class="admin-only-control hidden mobile-nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 bg-amber-50 text-amber-900 border border-amber-300">
           <i data-lucide="settings-2" class="w-5 h-5 text-amber-600"></i>
           <span>⚙️ कस्टमाइज़ डैशबोर्ड (Admin)</span>
         </button>
@@ -232,7 +232,11 @@
       <i data-lucide="package" class="w-5 h-5"></i>
       <span>मसाले</span>
     </button>
-    <button onclick="window.app.switchTab('admin')" class="flex flex-col items-center text-[10px] text-purple-700 font-bold">
+    <button onclick="window.app.switchTab('recipes')" class="flex flex-col items-center text-[10px] text-amber-800 font-bold">
+      <i data-lucide="utensils" class="w-5 h-5"></i>
+      <span>रेसिपीज़</span>
+    </button>
+    <button id="mobile-bar-admin-btn" onclick="window.app.switchTab('admin')" class="admin-only-control hidden flex flex-col items-center text-[10px] text-purple-700 font-bold">
       <i data-lucide="settings" class="w-5 h-5"></i>
       <span>कस्टमाइज़</span>
     </button>
@@ -317,8 +321,8 @@
     </div>
   </div>
 
-  <!-- Floating Quick Customizer Button (Bottom Left) -->
-  <div class="floating-customizer-btn hidden sm:block">
+  <!-- Floating Quick Customizer Button (Bottom Left - Admin Only) -->
+  <div id="floating-admin-btn" class="admin-only-control hidden floating-customizer-btn">
     <button onclick="window.app.switchTab('admin')" class="inline-flex items-center gap-2 bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 hover:from-amber-600 hover:to-red-600 text-white font-extrabold px-4 py-3 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all border-2 border-amber-400/70 pulse-glow-amber text-xs">
       <i data-lucide="settings" class="w-4 h-4 text-amber-300"></i>
       <span>⚙️ कस्टमाइज़ डैशबोर्ड</span>
@@ -469,6 +473,24 @@
 
       <div class="pt-8 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p>© 2026 Jyoti Masala Box (ज्योति मसाला बॉक्स). सर्वाधिकार सुरक्षित।</p>
+
+        <!-- Discreet Admin Portal Link for Owner -->
+        <div class="flex items-center gap-2">
+          <button id="footer-admin-login-btn" onclick="window.app.openAdminLoginModal()" class="text-stone-500 hover:text-amber-400 transition-colors flex items-center gap-1 py-1 px-2.5 rounded-lg border border-stone-800 hover:border-stone-700 bg-stone-900/60" title="व्यवस्थापक लॉगिन (शॉर्टकट: Ctrl + Shift + A)">
+            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+            <span>एडमिन लॉगिन</span>
+          </button>
+          <div id="footer-admin-logout-btn" class="hidden flex items-center gap-2">
+            <button onclick="window.app.switchTab('admin')" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5 bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-600/40">
+              <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+              <span>कस्टमाइज़ डैशबोर्ड</span>
+            </button>
+            <button onclick="window.app.handleAdminLogout()" class="text-red-400 hover:text-red-300 underline text-xs">
+              लॉगआउट
+            </button>
+          </div>
+        </div>
+
         <p class="flex items-center gap-1">
           <span>शुद्धता व स्वाद के साथ</span>
           <span class="text-red-500">❤️</span>
